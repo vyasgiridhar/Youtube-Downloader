@@ -1,18 +1,46 @@
 package hackerspace.invento.youtubedownloader;
 
-import android.support.v7.app.ActionBarActivity;
+import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+
+import com.daimajia.swipe.SwipeLayout;
+import com.daimajia.swipe.util.Attributes;
+
+import java.util.List;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
+
+
+    ListView list;
+    ListViewAdapter adap;
+    Handler handler;
+    List<Video> searchresult;
+    
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        list = (ListView)findViewById(R.id.listview);
+        adap = new ListViewAdapter(this);
+        list.setAdapter(adap);
+        adap.setMode(Attributes.Mode.Single);
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ((SwipeLayout) (list.getChildAt(position - list.getFirstVisiblePosition()))).open(true);
+            }
+        });
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

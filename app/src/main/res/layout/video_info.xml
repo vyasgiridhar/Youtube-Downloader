@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="1"
+    android:background="#FF5534">
+
+    <TextView
+        android:layout_width="365dp"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/Quality"
+        android:id="@+id/textView2"
+        android:layout_weight="0.09"
+        android:paddingTop="30dp" />
+
+    <CheckBox
+        android:layout_width="217dp"
+        android:layout_height="wrap_content"
+        android:text="@string/p240"
+        android:id="@+id/checkBox"
+        android:layout_weight="0.06" />
+
+    <CheckBox
+        android:layout_width="129dp"
+        android:layout_height="wrap_content"
+        android:text="@string/p360"
+        android:id="@+id/checkBox2"
+        android:layout_weight="0.09" />
+
+    <CheckBox
+        android:layout_width="124dp"
+        android:layout_height="wrap_content"
+        android:text="@string/p480"
+        android:id="@+id/checkBox3"
+        android:layout_weight="0.09" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/p720"
+        android:id="@+id/checkBox4"
+        android:layout_weight="0.09" />
+
+    <Button
+        android:layout_width="186dp"
+        android:layout_height="wrap_content"
+        android:text="@string/download"
+        android:id="@+id/down_button"
+        android:background="@color/yellow" />
+
+
+</LinearLayout>
