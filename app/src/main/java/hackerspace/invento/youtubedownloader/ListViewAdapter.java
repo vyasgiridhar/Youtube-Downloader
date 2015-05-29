@@ -42,6 +42,7 @@ public class ListViewAdapter extends BaseSwipeAdapter {
         v.findViewById(R.id.Video).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Intent i;
 
             }

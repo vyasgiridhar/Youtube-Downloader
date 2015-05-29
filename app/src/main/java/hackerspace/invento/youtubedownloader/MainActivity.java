@@ -22,7 +22,7 @@ public class MainActivity extends Activity {
     ListViewAdapter adap;
     Handler handler;
     List<Video> searchresult;
-    
+
 
 
     @Override
