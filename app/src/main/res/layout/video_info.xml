@@ -1,53 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:weightSum="1"
     android:background="#FF5534">
 
+
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:id="@+id/Vid_Img"
+        android:layout_alignParentTop="true" />
+
     <TextView
-        android:layout_width="365dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/Quality"
-        android:id="@+id/textView2"
-        android:layout_weight="0.09"
-        android:paddingTop="30dp" />
-
-    <CheckBox
-        android:layout_width="217dp"
-        android:layout_height="wrap_content"
-        android:text="@string/p240"
-        android:id="@+id/checkBox"
-        android:layout_weight="0.06" />
-
-    <CheckBox
-        android:layout_width="129dp"
-        android:layout_height="wrap_content"
-        android:text="@string/p360"
-        android:id="@+id/checkBox2"
-        android:layout_weight="0.09" />
-
-    <CheckBox
-        android:layout_width="124dp"
-        android:layout_height="wrap_content"
-        android:text="@string/p480"
-        android:id="@+id/checkBox3"
-        android:layout_weight="0.09" />
+        android:id="@+id/Vid_Title"
+        android:layout_alignParentTop="true"
+        android:layout_alignBottom="@+id/Vid_Img"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/Vid_Img" />
 
     <CheckBox
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/p720"
-        android:id="@+id/checkBox4"
-        android:layout_weight="0.09" />
+        android:id="@+id/p720"
+        android:layout_marginTop="32dp"
+        android:onClick="P720"
+        android:layout_below="@+id/Vid_Img"
+        android:layout_alignParentStart="true" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/p480"
+        android:id="@+id/p480"
+        android:onClick="P480"
+        android:layout_below="@+id/p720"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="32dp" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/p360"
+        android:id="@+id/p360"
+        android:onClick="P360"
+        android:layout_marginTop="32dp"
+        android:layout_below="@+id/p480"
+        android:layout_alignParentStart="true" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/p240"
+        android:id="@+id/p240"
+        android:onClick="P240"
+        android:layout_marginTop="32dp"
+        android:layout_below="@+id/p360"
+        android:layout_alignParentStart="true" />
 
     <Button
-        android:layout_width="186dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/download"
+        android:text="@string/Search"
         android:id="@+id/down_button"
-        android:background="@color/yellow" />
+        android:background="@color/yellow"
+        android:layout_below="@+id/p240"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="32dp" />
 
-
-</LinearLayout>
+</RelativeLayout>

@@ -18,7 +18,16 @@
         android:layout_height="wrap_content"
         android:id="@+id/editText"
         android:layout_alignParentTop="true"
-        android:layout_alignEnd="@+id/listview"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/search_button" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Search"
+        android:id="@+id/search_button"
+        android:layout_alignBottom="@+id/editText"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>

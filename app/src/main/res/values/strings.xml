@@ -4,10 +4,12 @@
     <string name="Video">Video</string>
     <string name="action_settings">Settings</string>
     <string name="Audio">Audio</string>
+    <string name="p1080">1080p</string>1080
     <string name="p720">720p</string>
     <string name="p480">480p</string>
     <string name="p360">360p</string>
     <string name="p240">240p</string>
     <string name="Quality">Select Quality : </string>
     <string name="download">Download</string>
+    <string name="Search">Search</string>
 </resources>

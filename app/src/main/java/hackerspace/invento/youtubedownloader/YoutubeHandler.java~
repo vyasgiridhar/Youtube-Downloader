@@ -43,15 +43,16 @@ public class YoutubeHandler {
         }
     }
 
-    public List<Video> Search(String word){
+    public List<Song> Search(String word){
         query.setQ(word);
         try{
             SearchListResponse response = query.execute();
             List<SearchResult> results = response.getItems();
-            List<Video> items = new ArrayList<>();
+            List<Song> items = new ArrayList<Song>();
             for(SearchResult result:results){
-                Video item = new Video();
+                Song item = new Song();
                 item.setTitle(result.getSnippet().getTitle());
+                item.setArtist(result.getSnippet().getChannelTitle());
                 item.setimgurl(result.getSnippet().getThumbnails().getDefault().getUrl());
                 item.setURL(result.getId().getVideoId());
                 items.add(item);
