@@ -2,15 +2,19 @@ package hackerspace.invento.youtubedownloader;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.daimajia.swipe.SimpleSwipeListener;
 import com.daimajia.swipe.SwipeLayout;
 import com.daimajia.swipe.adapters.BaseSwipeAdapter;
+import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
 
 /**
  * Created by invento on 28/5/15.
@@ -18,15 +22,17 @@ import com.daimajia.swipe.adapters.BaseSwipeAdapter;
 public class ListViewAdapter extends BaseSwipeAdapter {
 
     private Context context;
-    Video [] vids;
+    ArrayList<Video> result;
     GetSong song = new GetSong();
+    LayoutInflater inflater;
 
-    public ListViewAdapter(Context c,Video [] v) {
-
-        vids = v;
+    public ListViewAdapter(Context c,ArrayList<Video> list){
+        result = list;
         this.context = c;
-
+        inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
+
+
 
     @Override
     public int getSwipeLayoutResourceId(int position){
@@ -49,8 +55,8 @@ public class ListViewAdapter extends BaseSwipeAdapter {
             @Override
             public void onClick(View view) {
 
-                Intent i = new Intent(context,Vid_Download_Page.class);
-                i.putExtra("The Vid",vids[position]);
+                Intent i = new Intent(context, Vid_Download_Page.class);
+                i.putExtra("The Vid", result.get(position));
                 context.startActivity(i);
 
             }
@@ -59,7 +65,7 @@ public class ListViewAdapter extends BaseSwipeAdapter {
             @Override
             public void onClick(View view) {
 
-                song.SetURL(vids[position].getURL());
+                song.SetURL(result.get(position).getURL(),context);
                 song.execute();
 
             }
@@ -69,6 +75,28 @@ public class ListViewAdapter extends BaseSwipeAdapter {
 
     public void fillValues(int position,View convert){
 
+        Holder holder = new Holder();
+        View row;
+        row = inflater.inflate(R.layout.listview_item,null);
+        holder.tv = (TextView) row.findViewById(R.id.textView);
+        holder.img = (ImageView) row.findViewById(R.id.image);
+
+        holder.tv.setText(result.get(position).getTitle());
+        Picasso.with(context).load(result.get(position).getImgurl()).into(holder.img);
+        row.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(context,"Swipe to reveal options", Toast.LENGTH_LONG).show();
+            }
+        });
+
+
+    }
+
+    public class Holder
+    {
+        TextView tv;
+        ImageView img;
     }
 
     @Override

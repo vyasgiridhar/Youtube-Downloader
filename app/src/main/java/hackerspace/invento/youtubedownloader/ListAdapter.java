@@ -12,16 +12,18 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+
 /**
  * Created by invento on 29/5/15.
  */
 public class ListAdapter extends BaseAdapter{
 
-    Video [] result;
+    ArrayList<Video> result;
     Context context;
     private static LayoutInflater inflater = null;
 
-    public ListAdapter(MainActivity mainactivity,Video [] list){
+    public ListAdapter(MainActivity mainactivity,ArrayList<Video> list){
         result = list;
         inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
@@ -29,7 +31,7 @@ public class ListAdapter extends BaseAdapter{
     @Override
     public int getCount() {
 
-        return result.length;
+        return result.size();
     }
 
     @Override
@@ -57,8 +59,8 @@ public class ListAdapter extends BaseAdapter{
         holder.tv = (TextView) row.findViewById(R.id.textView);
         holder.img = (ImageView) row.findViewById(R.id.image);
 
-        holder.tv.setText(result[position].getTitle());
-        Picasso.with(context).load(result[position].getImgurl()).into(holder.img);
+        holder.tv.setText(result.get(position).getTitle());
+        Picasso.with(context).load(result.get(position).getImgurl()).into(holder.img);
         row.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {

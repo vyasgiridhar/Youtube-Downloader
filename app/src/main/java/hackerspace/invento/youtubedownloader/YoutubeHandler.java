@@ -37,26 +37,31 @@ public class YoutubeHandler {
             query = youtube.search().list("id,snippet");
             query.setKey(KEY);
             query.setType("video");
-            query.setFields("items(id/videoId,snippet/title,snippet/channel,snippet/thumbnails/default/url)");
+            query.setFields("items(id/videoId,snippet/title,snippet/thumbnails/default/url)");
         }catch(IOException e){
             Log.d("YH", "Could not initialize: " + e);
         }
     }
 
-    public List<Video> Search(String word){
+    public ArrayList<Video> Search(String word){
         query.setQ(word);
         try{
             SearchListResponse response = query.execute();
             List<SearchResult> results = response.getItems();
-            List<Video> items = new ArrayList<>();
+            ArrayList<Video> vids = new ArrayList<Video>();
+
+            Log.d("Title",results.get(0).getSnippet().getTitle());
+
             for(SearchResult result:results){
-                Video item = new Video();
-                item.setTitle(result.getSnippet().getTitle());
-                item.setimgurl(result.getSnippet().getThumbnails().getDefault().getUrl());
-                item.setURL(result.getId().getVideoId());
-                items.add(item);
+                Video vid = new Video();
+                Log.d("Title",result.getSnippet().getTitle());
+                vid.setTitle(result.getSnippet().getTitle());
+
+                vid.setimgurl(result.getSnippet().getThumbnails().getDefault().getUrl());
+                vid.setURL(result.getId().getVideoId());
+                vids.add(vid);
             }
-            return items;
+            return vids;
         }catch(IOException e){
             Log.d("YC", "Could not search: "+e);
             return null;

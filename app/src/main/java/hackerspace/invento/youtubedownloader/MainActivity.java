@@ -1,8 +1,13 @@
 package hackerspace.invento.youtubedownloader;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,6 +18,10 @@ import android.widget.ListView;
 import com.daimajia.swipe.SwipeLayout;
 import com.daimajia.swipe.util.Attributes;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -21,11 +30,11 @@ public class MainActivity extends Activity {
 
     ListView list;
     ListViewAdapter adap;
-    ListAdapter adapt;
-    private MergeAdapter adapter = new MergeAdapter();
     EditText edit;
     String Search;
-    Video [] List;
+    ArrayList<Video> List;
+    GetVids v = new GetVids();
+    String error;
 
 
     @Override
@@ -34,40 +43,51 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         list = (ListView)findViewById(R.id.listview);
 
-
+        list.setVisibility(View.INVISIBLE);
+        List = new ArrayList<>();
         findViewById(R.id.search_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 edit = (EditText) findViewById(R.id.editText);
                 do {
                     Search = edit.getText().toString();
-                    searchOnYoutube(Search);
                 } while (Search == null);
+                if(!Search.isEmpty()) {
+                    v.SetSearch(Search);
+                    v.execute();
 
+                    Log.d("Error","Starting to sleep");
+                    try {
+                        Thread.sleep(2000);                 //1000 milliseconds is one second.
+                    } catch(InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                    Log.d("Error","Stopping to sleep");
+                    Log.d("Error", valueOf(List.size()));
+                    if(!List.isEmpty())
+                    adap = new ListViewAdapter(MainActivity.this, List);
+                    list.setAdapter(adap);
+                    list.setVisibility(View.VISIBLE);
+                    adap.setMode(Attributes.Mode.Single);
+
+                }
             }
+
         });
-        adap = new ListViewAdapter(this,List);
-        adapt = new ListAdapter(this,List);
-        adapter.addAdapter(adap);
-        adapter.addAdapter(adapt);
-        list.setAdapter(adapter);
-        adap.setMode(Attributes.Mode.Single);
+
+
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ((SwipeLayout) (list.getChildAt(position - list.getFirstVisiblePosition()))).open(true);
             }
         });
-        adapter.addAdapter(adap);
-        adapter.addAdapter(adapt);
-        list.setAdapter(adapter);
+
+
     }
 
-    private void searchOnYoutube(final String keywords) {
-
-        YoutubeHandler yc = new YoutubeHandler(MainActivity.this);
-        yc.Search(keywords).toArray(List);
-
+    public static String valueOf(Object obj) {
+        return (obj == null) ? "null" : obj.toString();
     }
 
     @Override
@@ -90,5 +110,48 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public class GetVids extends AsyncTask<Void, Void, Void> {
+
+        String search;
+
+        void SetSearch(String u) {
+
+            search = u;
+
+        }
+
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(Void... arg0) {
+
+            searchOnYoutube(Search);
+
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            // Dismiss the progress dialog
+
+        }
+
+
+        private void searchOnYoutube(final String keywords) {
+
+            YoutubeHandler yc = new YoutubeHandler(MainActivity.this);
+            List = yc.Search(keywords);
+            Log.d("Error 2", valueOf(List.size()));
+
+
+        }
     }
 }

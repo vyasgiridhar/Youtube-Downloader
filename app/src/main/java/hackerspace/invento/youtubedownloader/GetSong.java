@@ -30,8 +30,11 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
     String URL;
     Context context;
 
-    void SetURL(String u) {
+    void SetURL(String u, Context c) {
+
         this.URL = "http://YoutubeInMP3.com/fetch/?api=advanced&format=JSON&video="+u;
+        context = c;
+
     }
 
 
