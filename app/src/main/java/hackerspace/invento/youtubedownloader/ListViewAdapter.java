@@ -73,22 +73,21 @@ public class ListViewAdapter extends BaseSwipeAdapter {
         return v;
     }
 
+    @Override
     public void fillValues(int position,View convert){
 
         Holder holder = new Holder();
-        View row;
-        row = inflater.inflate(R.layout.listview_item,null);
-        holder.tv = (TextView) row.findViewById(R.id.textView);
-        holder.img = (ImageView) row.findViewById(R.id.image);
-
+        holder.tv = (TextView) convert.findViewById(R.id.textView);
+        holder.img = (ImageView) convert.findViewById(R.id.imageView);
         holder.tv.setText(result.get(position).getTitle());
         Picasso.with(context).load(result.get(position).getImgurl()).into(holder.img);
-        row.setOnClickListener(new View.OnClickListener() {
+        convert.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(context,"Swipe to reveal options", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Swipe to reveal options", Toast.LENGTH_LONG).show();
             }
         });
+
 
 
     }
@@ -101,7 +100,7 @@ public class ListViewAdapter extends BaseSwipeAdapter {
 
     @Override
     public int getCount() {
-        return 50;
+        return result.size();
     }
 
     @Override

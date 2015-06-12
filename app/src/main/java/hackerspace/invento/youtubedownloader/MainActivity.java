@@ -15,6 +15,8 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
 import com.daimajia.swipe.SwipeLayout;
 import com.daimajia.swipe.util.Attributes;
 
@@ -44,6 +46,8 @@ public class MainActivity extends Activity {
         list = (ListView)findViewById(R.id.listview);
 
         list.setVisibility(View.INVISIBLE);
+        YoYo.with(Techniques.RollOut).duration(700).playOn(findViewById(R.id.empty));
+        findViewById(R.id.empty).setVisibility(View.INVISIBLE);
         List = new ArrayList<>();
         findViewById(R.id.search_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,28 +56,16 @@ public class MainActivity extends Activity {
                 do {
                     Search = edit.getText().toString();
                 } while (Search == null);
-                if(!Search.isEmpty()) {
+                if(!Search.isEmpty()&&v.getStatus()!=AsyncTask.Status.RUNNING) {
                     v.SetSearch(Search);
                     v.execute();
-
-                    Log.d("Error","Starting to sleep");
-                    try {
-                        Thread.sleep(2000);                 //1000 milliseconds is one second.
-                    } catch(InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                    }
-                    Log.d("Error","Stopping to sleep");
-                    Log.d("Error", valueOf(List.size()));
-                    if(!List.isEmpty())
-                    adap = new ListViewAdapter(MainActivity.this, List);
-                    list.setAdapter(adap);
-                    list.setVisibility(View.VISIBLE);
-                    adap.setMode(Attributes.Mode.Single);
 
                 }
             }
 
         });
+
+
 
 
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -140,6 +132,10 @@ public class MainActivity extends Activity {
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
+            adap = new ListViewAdapter(MainActivity.this, List);
+            list.setAdapter(adap);
+            list.setVisibility(View.VISIBLE);
+            adap.setMode(Attributes.Mode.Single);
             // Dismiss the progress dialog
 
         }

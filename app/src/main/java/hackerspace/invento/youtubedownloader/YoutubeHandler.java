@@ -23,6 +23,7 @@ public class YoutubeHandler {
 
     private YouTube youtube;
     private YouTube.Search.List query;
+    Long MaxResults = 25L;
 
     public static final String KEY = "AIzaSyDgWzLARD5rt5gfud0lylXOQxKkNIOe_eQ";
 
@@ -37,6 +38,7 @@ public class YoutubeHandler {
             query = youtube.search().list("id,snippet");
             query.setKey(KEY);
             query.setType("video");
+            query.setMaxResults(MaxResults);
             query.setFields("items(id/videoId,snippet/title,snippet/thumbnails/default/url)");
         }catch(IOException e){
             Log.d("YH", "Could not initialize: " + e);
