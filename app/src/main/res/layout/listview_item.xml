@@ -18,14 +18,7 @@
         android:tag="Bottom3"
         android:weightSum="10">
 
-        <Button
-            android:id="@+id/Video"
-            android:layout_width="111dp"
-            android:layout_height="fill_parent"
-            android:text="@string/Video"
-            android:textColor="#FF5534"
-            android:layout_weight="6.18"
-            android:layout_gravity="end"/>
+
 
         <Button
             android:layout_width="150dp"
@@ -37,7 +30,6 @@
             android:layout_weight="3.25" />
 
     </LinearLayout>
-
     <!-- Bottom View End-->
 
     <!-- Surface View Start -->

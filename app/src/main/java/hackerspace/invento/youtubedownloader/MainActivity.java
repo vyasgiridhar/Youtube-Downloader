@@ -15,16 +15,14 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import com.daimajia.androidanimations.library.Techniques;
-import com.daimajia.androidanimations.library.YoYo;
 import com.daimajia.swipe.SwipeLayout;
 import com.daimajia.swipe.util.Attributes;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+
 
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class MainActivity extends Activity {
@@ -37,28 +35,39 @@ public class MainActivity extends Activity {
     ArrayList<Video> List;
     GetVids v = new GetVids();
     String error;
-
+    private InterstitialAd mInterstitialAd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         list = (ListView)findViewById(R.id.listview);
-
-        list.setVisibility(View.INVISIBLE);
-        YoYo.with(Techniques.RollOut).duration(700).playOn(findViewById(R.id.empty));
-        findViewById(R.id.empty).setVisibility(View.INVISIBLE);
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId("ca-app-pub-8949860465376306/4840483874");
+        //list.setVisibility(View.VISIBLE);
+        //YoYo.with(Techniques.RollOut).duration(700).playOn(findViewById(R.id.empty));
+        list.setEmptyView(findViewById(R.id.empty));
         List = new ArrayList<>();
         findViewById(R.id.search_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                AdRequest adRequest = new AdRequest.Builder()
+                        .addTestDevice("YOUR_DEVICE_HASH")
+                        .build();
+
+                mInterstitialAd.loadAd(adRequest);
                 edit = (EditText) findViewById(R.id.editText);
-                do {
-                    Search = edit.getText().toString();
-                } while (Search == null);
-                if(!Search.isEmpty()&&v.getStatus()!=AsyncTask.Status.RUNNING) {
+                Search = edit.getText().toString();
+
+
+                if(!Search.isEmpty()&&v.getStatus().toString()!="RUNNING") {
+                    v = new GetVids();
                     v.SetSearch(Search);
                     v.execute();
+                    mInterstitialAd.show();
+                    if (mInterstitialAd.isLoaded()) {
+                        mInterstitialAd.show();
+                    }
 
                 }
             }
@@ -66,12 +75,13 @@ public class MainActivity extends Activity {
         });
 
 
-
-
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ((SwipeLayout) (list.getChildAt(position - list.getFirstVisiblePosition()))).open(true);
+                if (mInterstitialAd.isLoaded()) {
+                    mInterstitialAd.show();
+                }
             }
         });
 

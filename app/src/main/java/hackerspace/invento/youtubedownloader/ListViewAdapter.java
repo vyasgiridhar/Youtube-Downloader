@@ -51,16 +51,7 @@ public class ListViewAdapter extends BaseSwipeAdapter {
                 Toast.makeText(context, "Audio or video?", Toast.LENGTH_LONG).show();
             }
         });
-        v.findViewById(R.id.Video).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                Intent i = new Intent(context, Vid_Download_Page.class);
-                i.putExtra("The Vid", result.get(position));
-                context.startActivity(i);
-
-            }
-        });
         v.findViewById(R.id.Audio).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
