@@ -34,7 +34,6 @@ public class MainActivity extends Activity {
     String Search;
     ArrayList<Video> List;
     GetVids v = new GetVids();
-    String error;
     private InterstitialAd mInterstitialAd;
 
     @Override
@@ -52,7 +51,6 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                 AdRequest adRequest = new AdRequest.Builder()
-                        .addTestDevice("YOUR_DEVICE_HASH")
                         .build();
 
                 mInterstitialAd.loadAd(adRequest);

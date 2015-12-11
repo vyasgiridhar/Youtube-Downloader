@@ -24,6 +24,7 @@ public class ListViewAdapter extends BaseSwipeAdapter {
     private Context context;
     ArrayList<Video> result;
     GetSong song = new GetSong();
+    GetVideo video = new GetVideo();
     LayoutInflater inflater;
 
     public ListViewAdapter(Context c,ArrayList<Video> list){
@@ -56,8 +57,17 @@ public class ListViewAdapter extends BaseSwipeAdapter {
             @Override
             public void onClick(View view) {
 
-                song.SetURL(result.get(position).getURL(),context);
+                song.SetURL(result.get(position).getURL(), context);
                 song.execute();
+
+            }
+        });
+        v.findViewById(R.id.Video).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                video.SetURL(result.get(position).getURL(), context,"720");
+                video.execute();
 
             }
         });
