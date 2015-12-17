@@ -1,7 +1,7 @@
 package hackerspace.invento.youtubedownloader;
 
+import android.app.DownloadManager;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -30,6 +30,8 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
 
     String URL;
     Context context;
+    DownloadManager dm;
+    private long enqueue;
 
     void SetURL(String u, Context c) {
 
@@ -61,9 +63,6 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
 
                 JSONObject jsonObj = new JSONObject(jsonStr);
 
-
-                String title = jsonObj.getString("title");
-                String time = jsonObj.getString("length");
                 URL = jsonObj.getString("link");
 
 
@@ -80,10 +79,10 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPostExecute(Void result) {
         super.onPostExecute(result);
-        // Dismiss the progress dialog
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(URL));
-        context.startActivity(browserIntent);
-
+        dm = (DownloadManager)context.getSystemService(context.DOWNLOAD_SERVICE);
+        DownloadManager.Request request = new DownloadManager.Request(
+                Uri.parse(URL));
+        enqueue = dm.enqueue(request);
     }
 
 
