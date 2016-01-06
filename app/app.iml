@@ -110,6 +110,7 @@
     <orderEntry type="library" exported="" name="google-http-client-1.19.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-location-8.4.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-plus-8.4.0" level="project" />
+    <orderEntry type="library" exported="" name="jsoup-1.8.3" level="project" />
     <orderEntry type="library" exported="" name="picasso-2.5.2" level="project" />
     <orderEntry type="library" exported="" name="play-services-auth-8.4.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-wearable-8.4.0" level="project" />
