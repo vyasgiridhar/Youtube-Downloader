@@ -1,1 +1,1 @@
-include ':app', ':ytdl', ':ytdl'
+include ':app'
