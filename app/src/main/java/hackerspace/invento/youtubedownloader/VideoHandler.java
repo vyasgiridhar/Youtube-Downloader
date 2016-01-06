@@ -6,12 +6,13 @@ import android.content.Context;
 
 import android.os.AsyncTask;
 
-
-import com.google.api.client.repackaged.org.apache.commons.codec.binary.StringUtils;
+import android.util.Log;
+import android.widget.Toast;
 
 
 import org.jsoup.Jsoup;
 
+import java.util.Arrays;
 
 
 /**
@@ -45,12 +46,12 @@ public class VideoHandler extends AsyncTask<Void, Void, Void>{
         // Creating service handler class instance
 
         try {
-            String Html = Jsoup.connect(Video_Url).get().html();
-            //Log.d("Response: ", "> " + jsonStr);
+            html = Jsoup.connect(Video_Url).get().html();
 
         } catch (Exception E) {
 
         }
+        Get_Links();
         return null;
     }
 
@@ -60,12 +61,79 @@ public class VideoHandler extends AsyncTask<Void, Void, Void>{
         PD.dismiss();
     }
 
+    private String sortStringAt ( String source, String delimiter ) {
+
+        String sortedUrl = source.replaceFirst("\\?.*", "");
+
+        String[] unsortedUrl = source.replaceFirst("http.*\\?","").concat("&range=0-999999999").split(delimiter);
+
+        Arrays.sort(unsortedUrl);
+
+        for (int i=0;i<unsortedUrl.length-1;i++) {
+            if (unsortedUrl[i].equals(unsortedUrl[i+1]))
+                unsortedUrl[i]="";
+        }
+
+        sortedUrl += Arrays.toString(unsortedUrl);
+        sortedUrl = sortedUrl.replaceAll("\\[, ", delimiter).replaceAll(", ", delimiter).replaceAll(",,", delimiter).replaceAll("]", "").replaceAll(delimiter+delimiter, delimiter);
+        sortedUrl = sortedUrl.replaceFirst("/videoplayback\\[", "/videoplayback?").replaceFirst("/videoplayback&", "/videoplayback?");
+        return sortedUrl;
+
+    }
+
+
     void Get_Links(){
 
-        Video_Url = Video_Url.replaceAll(" ", "");
-        Video_Url = Video_Url.replace("%25","%");
-        Video_Url = Video_Url.replace("\\u0026", "&");
-        html = StringUtils.subStringbetween()
+        html = html.replaceAll(" ", "");
+        html = html.replace("%25","%");
+        html = html.replace("\\u0026", "&");
+        String Links1="",Links2="";
+        if (html.contains("\"url_encoded_fmt_stream_map\":\"")) {
+            Links1 = substringBetween(html,"\"url_encoded_fmt_stream_map\":\"" , "\"");
+        }
+        else if(html.contains("\"adaptive_fmts\":\"")){
+            Links2 = substringBetween(html,"\"adaptive_fmts\":\"","\"");
+        }
+        String Links = Links1 + "," + Links2;
+
+        String[] sourceCodeYoutubeUrls = Links.split(",");
+
+        for(String url : sourceCodeYoutubeUrls){
+            if(url.matches(".*conn=rtmpe.*")){
+
+                Toast.makeText(context,"Could not download videos",Toast.LENGTH_LONG).show();
+                break;
+            }
+            String[] fmtUrlPair = url.split("url=http(s)?",2);
+            fmtUrlPair[1] = "url=http"+fmtUrlPair[1]+"&"+fmtUrlPair[0];
+            fmtUrlPair[0] = fmtUrlPair[1].substring(fmtUrlPair[1].indexOf("itag=")+5, fmtUrlPair[1].indexOf("itag=")+5+1+(fmtUrlPair[1].matches(".*itag=[0-9]{2}.*")?1:0)+(fmtUrlPair[1].matches(".*itag=[0-9]{3}.*")?1:0));
+            if (this.Video_Url.startsWith("https")) {
+                fmtUrlPair[1] = fmtUrlPair[1].replaceFirst("url=http%3A%2F%2F", "https://");
+            } else {
+                fmtUrlPair[1] = fmtUrlPair[1].replaceFirst("url=http%3A%2F%2F", "http://");
+            }
+            fmtUrlPair[1] = fmtUrlPair[1].replaceAll("%3F","?").replaceAll("%2F", "/").replaceAll("%3B",";")/*.replaceAll("%2C",",")*/.replaceAll("%3D","=").replaceAll("%26", "&").replaceAll("%252C", "%2C").replaceAll("sig=", "signature=").replaceAll("&s=", "&signature=").replaceAll("\\?s=", "?signature=");
+            String sortedUrl = sortStringAt( fmtUrlPair[1], "&" ) ;
+            fmtUrlPair[1] = sortedUrl;
+            Log.d(sortedUrl,"YOYOSANTOS");
+
+        }
+
+    }
+
+    public static String substringBetween(String str, String open, String close) {
+        if (str == null || open == null || close == null) {
+            return null;
+        }
+        int start = str.indexOf(open);
+        if (start != -1) {
+            int end = str.indexOf(close, start + open.length());
+            if (end != -1) {
+                return str.substring(start + open.length(), end);
+            }
+        }
+        return null;
     }
 }
+
 

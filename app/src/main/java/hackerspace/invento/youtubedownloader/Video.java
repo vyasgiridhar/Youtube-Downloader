@@ -42,7 +42,7 @@ public class Video implements Serializable{
 
     public void setURL(String url) {
         this.URL = url;
-        URL =  "http://www.youtube.com/watch?v="+ URL;
+        URL =  "https://www.youtube.com/watch?v="+ URL;
     }
 
 
