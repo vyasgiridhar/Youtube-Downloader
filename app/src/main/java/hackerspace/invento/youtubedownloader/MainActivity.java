@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.daimajia.swipe.SwipeLayout;
 import com.daimajia.swipe.util.Attributes;
@@ -33,7 +34,7 @@ public class MainActivity extends Activity {
     EditText edit;
     String Search;
     ArrayList<Video> List;
-    GetVids v = new GetVids();
+    GetVids v = null;
     private InterstitialAd mInterstitialAd;
 
     @Override
@@ -59,7 +60,7 @@ public class MainActivity extends Activity {
 
 
                 if(!Search.isEmpty()&&v.getStatus().toString()!="RUNNING") {
-                    v = new GetVids();
+                    v = new GetVids(getApplication().getApplicationContext());
                     v.SetSearch(Search);
                     v.execute();
                     mInterstitialAd.show();
@@ -115,7 +116,10 @@ public class MainActivity extends Activity {
     public class GetVids extends AsyncTask<Void, Void, Void> {
 
         String search;
-
+        Context context;
+        public GetVids(Context con){
+            this.context = con;
+        }
         void SetSearch(String u) {
 
             search = u;
@@ -130,9 +134,11 @@ public class MainActivity extends Activity {
 
         @Override
         protected Void doInBackground(Void... arg0) {
-
+        try {
             searchOnYoutube(Search);
-
+        }catch(Exception E){
+            Toast.makeText(context,"Could not load Videos",Toast.LENGTH_LONG);
+        }
 
             return null;
         }

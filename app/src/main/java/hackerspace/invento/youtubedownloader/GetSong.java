@@ -39,7 +39,7 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... arg0) {
 
         try {
-            String jsonStr = Jsoup.connect("http://en.wikipedia.org/").get().html();
+            String jsonStr = Jsoup.connect(this.URL).get().html();
 
 
             //Log.d("Response: ", "> " + jsonStr);

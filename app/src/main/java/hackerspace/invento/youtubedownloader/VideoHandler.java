@@ -46,7 +46,8 @@ public class VideoHandler extends AsyncTask<Void, Void, Void>{
         // Creating service handler class instance
 
         try {
-            html = Jsoup.connect(Video_Url).get().html();
+            this.html = Jsoup.connect(Video_Url).get().html();
+            this.Get_Links();
 
         } catch (Exception E) {
 
@@ -58,7 +59,7 @@ public class VideoHandler extends AsyncTask<Void, Void, Void>{
     @Override
     protected void onPostExecute(Void result) {
         super.onPostExecute(result);
-        PD.dismiss();
+        this.PD.dismiss();
     }
 
     private String sortStringAt ( String source, String delimiter ) {
@@ -113,9 +114,8 @@ public class VideoHandler extends AsyncTask<Void, Void, Void>{
                 fmtUrlPair[1] = fmtUrlPair[1].replaceFirst("url=http%3A%2F%2F", "http://");
             }
             fmtUrlPair[1] = fmtUrlPair[1].replaceAll("%3F","?").replaceAll("%2F", "/").replaceAll("%3B",";")/*.replaceAll("%2C",",")*/.replaceAll("%3D","=").replaceAll("%26", "&").replaceAll("%252C", "%2C").replaceAll("sig=", "signature=").replaceAll("&s=", "&signature=").replaceAll("\\?s=", "?signature=");
-            String sortedUrl = sortStringAt( fmtUrlPair[1], "&" ) ;
-            fmtUrlPair[1] = sortedUrl;
-            Log.d(sortedUrl,"YOYOSANTOS");
+            fmtUrlPair[1] = sortStringAt( fmtUrlPair[1], "&" ) ;
+            Log.d(fmtUrlPair[1],"YOYOSANTOS");
 
         }
 
