@@ -1,6 +1,7 @@
 package hackerspace.invento.youtubedownloader;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -34,7 +35,7 @@ public class MainActivity extends Activity {
     EditText edit;
     String Search;
     ArrayList<Video> List;
-    GetVids v = null;
+    GetVids v = new GetVids(this);
     private InterstitialAd mInterstitialAd;
 
     @Override
@@ -60,7 +61,7 @@ public class MainActivity extends Activity {
 
 
                 if(!Search.isEmpty()&&v.getStatus().toString()!="RUNNING") {
-                    v = new GetVids(getApplication().getApplicationContext());
+                    v = new GetVids(MainActivity.this);
                     v.SetSearch(Search);
                     v.execute();
                     mInterstitialAd.show();
@@ -117,6 +118,8 @@ public class MainActivity extends Activity {
 
         String search;
         Context context;
+        Boolean Obtained = false;
+        ProgressDialog PD;
         public GetVids(Context con){
             this.context = con;
         }
@@ -130,14 +133,18 @@ public class MainActivity extends Activity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            PD = new ProgressDialog(context);
+            PD.setMessage("Parsing Data");
+            PD.show();
         }
 
         @Override
         protected Void doInBackground(Void... arg0) {
         try {
             searchOnYoutube(Search);
+            Obtained = true;
         }catch(Exception E){
-            Toast.makeText(context,"Could not load Videos",Toast.LENGTH_LONG);
+            Obtained = false;
         }
 
             return null;
@@ -146,10 +153,13 @@ public class MainActivity extends Activity {
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            adap = new ListViewAdapter(MainActivity.this, List);
-            list.setAdapter(adap);
-            list.setVisibility(View.VISIBLE);
-            adap.setMode(Attributes.Mode.Single);
+            if(this.Obtained){
+                adap = new ListViewAdapter(MainActivity.this, List);
+                list.setAdapter(adap);
+                list.setVisibility(View.VISIBLE);
+                adap.setMode(Attributes.Mode.Single);
+            }
+            PD.dismiss();
             // Dismiss the progress dialog
 
         }

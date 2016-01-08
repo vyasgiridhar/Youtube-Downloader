@@ -12,6 +12,10 @@ import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Arrays;
 
 
@@ -24,7 +28,7 @@ public class VideoHandler extends AsyncTask<Void, Void, Void>{
     String html = null;
     private ProgressDialog PD;
     Context context;
-
+    Boolean success = false;
 
     public VideoHandler(String u, Context c) {
 
@@ -44,15 +48,28 @@ public class VideoHandler extends AsyncTask<Void, Void, Void>{
     @Override
     protected Void doInBackground(Void... arg0) {
         // Creating service handler class instance
-
         try {
-            this.html = Jsoup.connect(Video_Url).get().html();
-            this.Get_Links();
+            URL url = new URL(this.Video_Url);
+            BufferedReader reader = null;
+            StringBuilder builder = new StringBuilder();
+            try {
+                reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
+                for (String line; (line = reader.readLine()) != null; ) {
+                    builder.append(line.trim());
+                }
+                Log.d("html",reader.toString());
+                success = true;
+            } finally {
 
-        } catch (Exception E) {
-
+                this.html = reader.toString();
+                if (reader != null) try {
+                    reader.close();
+                } catch (IOException logOrIgnore) {
+                }
+            }
+        }catch(Exception E){
+            success = false;
         }
-        Get_Links();
         return null;
     }
 
