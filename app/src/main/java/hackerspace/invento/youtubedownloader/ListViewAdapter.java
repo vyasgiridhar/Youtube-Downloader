@@ -1,7 +1,6 @@
 package hackerspace.invento.youtubedownloader;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +22,7 @@ public class ListViewAdapter extends BaseSwipeAdapter {
 
     private Context context;
     ArrayList<Video> result;
-    GetSong song = new GetSong();
+    GetSong song = null;
     VideoHandler video = null;
     LayoutInflater inflater;
 
@@ -57,6 +56,7 @@ public class ListViewAdapter extends BaseSwipeAdapter {
             @Override
             public void onClick(View view) {
 
+                song = new GetSong();
                 song.SetURL(result.get(position).getURL(), context);
                 song.execute();
 

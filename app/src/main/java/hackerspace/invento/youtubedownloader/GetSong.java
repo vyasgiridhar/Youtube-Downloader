@@ -1,17 +1,21 @@
 package hackerspace.invento.youtubedownloader;
 
 import android.app.DownloadManager;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+
+import org.apache.http.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
@@ -24,6 +28,7 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
     Context context;
     DownloadManager dm;
     private long enqueue;
+    ProgressDialog PD;
 
     void SetURL(String u, Context c) {
 
@@ -36,6 +41,9 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
+        PD = new ProgressDialog(context);
+        PD.setMessage("Parsing Data");
+        PD.show();
 
     }
 
@@ -43,20 +51,11 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... arg0) {
 
         try {
-            URL url = new URL(this.url);
-            BufferedReader reader = null;
-            StringBuilder builder = new StringBuilder();
-            try {
-                reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
-                for (String line; (line = reader.readLine()) != null;) {
-                    builder.append(line.trim());
-                }
-            } finally {
-                if (reader != null) try { reader.close(); } catch (IOException logOrIgnore) {}
-            }
-            String jsonStr = builder.toString();
 
-            Log.d("Response: ", "> " + jsonStr);
+            ServiceHandler service = new ServiceHandler();
+            String jsonStr = service.makeServiceCall(url,1);
+
+            Log.v("Response: ", "> " + jsonStr);
 
             if (jsonStr != null) {
                 try {
@@ -84,11 +83,13 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPostExecute(Void result) {
         super.onPostExecute(result);
+        PD.dismiss();
         dm = (DownloadManager)context.getSystemService(context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(
                 Uri.parse(this.url));
         enqueue = dm.enqueue(request);
     }
+
 
 
 }

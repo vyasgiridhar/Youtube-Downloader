@@ -10,12 +10,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 
-import org.jsoup.Jsoup;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.Arrays;
 
 
@@ -47,29 +41,11 @@ public class VideoHandler extends AsyncTask<Void, Void, Void>{
 
     @Override
     protected Void doInBackground(Void... arg0) {
-        // Creating service handler class instance
-        try {
-            URL url = new URL(this.Video_Url);
-            BufferedReader reader = null;
-            StringBuilder builder = new StringBuilder();
-            try {
-                reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
-                for (String line; (line = reader.readLine()) != null; ) {
-                    builder.append(line.trim());
-                }
-                Log.d("html",reader.toString());
-                success = true;
-            } finally {
 
-                this.html = reader.toString();
-                if (reader != null) try {
-                    reader.close();
-                } catch (IOException logOrIgnore) {
-                }
-            }
-        }catch(Exception E){
-            success = false;
-        }
+
+        ServiceHandler service = new ServiceHandler();
+        html = service.makeServiceCall(Video_Url,1);
+        this.Get_Links();
         return null;
     }
 
