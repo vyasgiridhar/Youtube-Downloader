@@ -52,8 +52,7 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
 
         try {
 
-            ServiceHandler service = new ServiceHandler();
-            String jsonStr = service.makeServiceCall(url,1);
+           String jsonStr = null;
 
             Log.v("Response: ", "> " + jsonStr);
 

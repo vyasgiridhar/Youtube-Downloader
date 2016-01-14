@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Youtube-Downloader.iml" filepath="$PROJECT_DIR$/Youtube-Downloader.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/youtube-extractor/youtube-extractor.iml" filepath="$PROJECT_DIR$/youtube-extractor/youtube-extractor.iml" />
     </modules>
   </component>
 </project>
