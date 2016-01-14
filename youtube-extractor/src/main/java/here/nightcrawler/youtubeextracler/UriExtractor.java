@@ -13,6 +13,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -272,8 +273,157 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
                         encSignatures.append(itag,mat.group());
                     }
                 }
+                mat = patUrl.matcher(encStream);
+                String url = null;
+                if(mat.find()){
+                    url = mat.group(1);
+                }
+                if(url != null){
+                    Meta meta = META_MAP.get(itag);
+                    String finalUrl = URLDecoder.decode(url,"UTF-8");
+                    YFile newVideo = new YFile(meta,finalUrl);
+                    ytFiles.put(itag,newVideo);
+                }
             }
+
+            if(encSignatures != null){
+                if(LOGGING)
+                    Log.d(LOG_TAG, "getStreamUrls: Decipher Signatures");
+                String signature;
+                decipheredSignature = null;
+                if(decipherSignature(encSignatures)){
+                    lock.lock();
+                    try{
+                        jsExecuting.await(3, TimeUnit.SECONDS);
+                    } finally{
+                        lock.unlock();
+                    }
+                }
+                signature = decipheredSignature;
+                if(signature == null) {
+                    return null;
+                }
+                else{
+                    String[] sigs = signature.split("\n");
+                    for(int i=0;i < encSignatures.size()&& i < sigs.length; i++){
+                        int key = encSignatures.keyAt(i);
+                        if(key == 0){
+                            dashMpdUrl = dashMpdUrl.replace("/s/"+encSignatures.get(key),"/signature/"+sigs[i]);
+                        }
+                        else{
+                            String url = ytFiles.get(key).getUrl();
+                            url+= "&signature=" + sigs[i];
+                            YFile newFile = new YFile(META_MAP.get(key),url);
+                            ytFiles.put(key,newFile);
+                        }
+                    }
+                }
+            }
+
+            if (parseDashManifest && dashMpdUrl != null) {
+                for (int i = 0; i < DASH_PARSE_RETRIES; i++) {
+                    try {
+                        // It sometimes failes to connect for no apparent reason. We just retry.
+                        parseDashManifest(dashMpdUrl, ytFiles);
+                        break;
+                    } catch (IOException io) {
+                        Thread.sleep(5);
+                        if (LOGGING)
+                            Log.d(LOG_TAG, "Failed to parse dash manifest " + (i + 1));
+                    }
+                }
+            }
+
+            if (ytFiles.size() == 0) {
+                if (LOGGING)
+                    Log.d(LOG_TAG, streamMap);
+                return null;
+            }
+            return ytFiles;
         }
 
     }
+
+
+    private boolean decipherSignature(final SparseArray<String> encSignature) throws IOException {
+        if( decipherFunctionName == null || decipherFunctions == null){
+            String decipherFunctUrl = "https://s.ytimg.com/yts/jsbin/" + decipherJsFileName;
+
+            BufferedReader reader = null;
+            String javascriptFile = null;
+            URL url = new URL(decipherFunctUrl);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestProperty("User-Agent",USER_AGENT);
+            try{
+                reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                StringBuilder sb = new StringBuilder("");
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+                javascriptFile = sb.toString();
+            }finally {
+                if(reader != null){
+                    reader.close();
+                }
+                urlConnection.disconnect();
+            }
+            Log.d("JS",javascriptFile);
+            if(LOGGING)
+                Log.d(LOG_TAG,"Decipher FunctURL: "+ decipherFunctUrl);
+            Matcher mat = patSignatureDecFunction.matcher(javascriptFile);
+            if(mat.find()){
+                decipherFunctionName = mat.group(1);
+                if(LOGGING)
+                    Log.d(LOG_TAG,"Decipher Functname: "+decipherFunctUrl);
+                Pattern patMainVariable = Pattern.compile("(var |,)" + decipherFunctionName + "(=function\\((.{1,3})\\)\\{)");
+
+                String mainDecipherFunct;
+
+                mat = patMainVariable.matcher(javascriptFile);
+                if(mat.find()){
+                    mainDecipherFunct = "var "+decipherFunctionName + mat.group(2);
+                }else {
+                    Pattern patMainFunction = Pattern.compile("(function  |,)" + decipherFunctionName + "(\\((.{1,3})\\)\\{)");
+                    mat = patMainFunction.matcher(javascriptFile);
+                    if(!mat.find())
+                        return false;
+                    mainDecipherFunct = "function " + decipherFunctionName +mat.group(2);
+                }
+
+                int startIndex = mat.end();
+
+                for(int braces =1,i = startIndex; i< javascriptFile.length();i++){
+                    if (braces == 0 && startIndex +5 < i){
+                        mainDecipherFunct += javascriptFile.substring(startIndex, i) + ";";
+                        break;
+                    }
+                    if (javascriptFile.charAt(i) == '{')
+                        braces++;
+                    else if (javascriptFile.charAt(i) == '}')
+                        braces--;
+                }
+                decipherFunctions = mainDecipherFunct;
+
+                // Search the main function for extra functions and variables
+                // needed for deciphering
+                // Search for variables
+
+                mat = patVaribleFunction.matcher(mainDecipherFunct);
+                while(mat.find()) {
+                    String variableDef = "var " + mat.group(2) + "={";
+                    if(decipherFunctions.contains(variableDef)){
+                        continue;
+                    }
+                    startIndex = javascriptFile.indexOf(variableDef) + variableDef.length();
+                }
+            }
+
+        }
+    }
+
+    private void parseDashManifest(String dashMpdUrl, SparseArray<YFile> ytFiles) throws IOException {
+
+    }
 }
+

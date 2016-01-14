@@ -1,1 +1,1 @@
-A simple app for youtube Mp3 Downloading
+A simple app for Downloading audio and video from Youtube
