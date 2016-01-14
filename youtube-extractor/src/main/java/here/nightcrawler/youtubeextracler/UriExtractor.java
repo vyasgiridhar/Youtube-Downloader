@@ -2,11 +2,15 @@ package here.nightcrawler.youtubeextracler;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.util.SparseArray;
 
+import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -119,6 +123,18 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
 
     @Override
     protected SparseArray<YFile> doInBackground(String... params){
-        youtubeID = null;
+        youtubeID = params[1];
+        String ytUrl = params[0];
+        try{
+            return getStreamUrls();
+        }catch(Exception E){
+            Log.d(LOG_TAG, "doInBackground: Stream URL Failed");
+        }
+        return null;
+    }
+    private SparseArray<YFile> getStreamUrls() throws IOException , InterruptedException {
+
+        String ytInfoUrl = (useHttp)? "http://" : "htpps://";
+        ytInfoUrl += "www.youtube";
     }
 }

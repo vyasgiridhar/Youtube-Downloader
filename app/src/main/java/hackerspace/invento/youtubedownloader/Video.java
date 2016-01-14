@@ -28,14 +28,6 @@ public class Video implements Serializable{
         this.title = title;
     }
 
-    public String getArtist() {
-        return Artist;
-    }
-
-    public void setArtist(String artist) {
-        this.Artist = artist;
-    }
-
     public String getURL() {
         return URL;
     }
