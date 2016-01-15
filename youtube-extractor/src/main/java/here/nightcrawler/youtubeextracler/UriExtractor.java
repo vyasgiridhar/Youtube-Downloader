@@ -13,6 +13,7 @@ import com.evgenii.jsevaluator.interfaces.JsCallback;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -149,24 +150,25 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
         }
         return null;
     }
-    private SparseArray<YFile> getStreamUrls() throws IOException , InterruptedException {
 
-        String ytInfoUrl = (useHttp)? "http://" : "htpps://";
+    private SparseArray<YFile> getStreamUrls() throws IOException, InterruptedException {
+
+        String ytInfoUrl = (useHttp) ? "http://" : "https://";
         ytInfoUrl += "www.youtube.com/get_video_info?video_id=" + youtubeID + "&eurl="
                 + URLEncoder.encode("https://youtube.googleapis.com/v/" + youtubeID, "UTF-8");
 
         String dashMpdUrl = null;
         String streamMap = null;
         BufferedReader reader = null;
-
         URL getUrl = new URL(ytInfoUrl);
         HttpURLConnection urlConnection = (HttpURLConnection) getUrl.openConnection();
-        urlConnection.setRequestProperty("User-Agent",USER_AGENT);
-        try{
+        urlConnection.setRequestProperty("User-Agent", USER_AGENT);
+        try {
             reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             streamMap = reader.readLine();
-        } finally{
-            if(reader ! = null){
+
+        } finally {
+            if (reader != null) {
                 reader.close();
             }
             urlConnection.disconnect();
@@ -179,177 +181,175 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
 
         // Some videos are using a ciphered signature we need to get the
         // deciphering js-file from the youtubepage.
-        if (streamMap == null||!streamMap.contains("use_cipher_signature=False")){
-            if(CACHING && (decipherJsFileName ==null||decipherFunctions ==null||decipherFunctionName == null)){
+        if (streamMap == null || !streamMap.contains("use_cipher_signature=False")) {
+            // Get the video directly from the youtubepage
+            if (CACHING
+                    && (decipherJsFileName == null || decipherFunctions == null || decipherFunctionName == null)) {
                 readDecipherFunctFromCache();
             }
-            getUrl = new URL("https://youtube.com/watch?v="+youtubeID);
+            getUrl = new URL("https://youtube.com/watch?v=" + youtubeID);
             urlConnection = (HttpURLConnection) getUrl.openConnection();
-            urlConnection.setRequestProperty("User-Agent",USER_AGENT);
-            try{
+            urlConnection.setRequestProperty("User-Agent", USER_AGENT);
+            try {
                 reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                 String line;
-                while((line = reader.readLine()) != null){
-                    if (line.contains("url_encoded_fmt_stream_map")){
-                        streamMap = line.replace("\\u0026","&");
+                while ((line = reader.readLine()) != null) {
+                    // Log.d("line", line);
+                    if (line.contains("url_encoded_fmt_stream_map")) {
+                        streamMap = line.replace("\\u0026", "&");
                         break;
                     }
                 }
-            }finally{
-                if(reader != null){
+            } finally {
+                if (reader != null) {
                     reader.close();
                 }
                 urlConnection.disconnect();
             }
-
             encSignatures = new SparseArray<>();
 
             patTitle = Pattern.compile("\"title\":( |)\"(.*?)(?<!\\\\)\"");
             mat = patTitle.matcher(streamMap);
-            if(mat.find()){
+            if (mat.find()) {
                 videoTitle = mat.group(2);
-                videoTitle = videoTitle.replace("\\\"","\"").replace("\\/", "/");
+                videoTitle = videoTitle.replace("\\\"", "\"").replace("\\/", "/");
             }
             mat = patDecryptionJsFile.matcher(streamMap);
-            if(mat.find()){
-                curJsFileName = mat.group(1).replace("\\/","/");
-                if(decipherJsFileName == null || !decipherJsFileName.equals(curJsFileName)){
+            if (mat.find()) {
+                curJsFileName = mat.group(1).replace("\\/", "/");
+                if (decipherJsFileName == null || !decipherJsFileName.equals(curJsFileName)) {
                     decipherFunctions = null;
                     decipherFunctionName = null;
                 }
                 decipherJsFileName = curJsFileName;
             }
-            if(parseDashManifest){
+
+            if (parseDashManifest) {
                 mat = patDashManifest2.matcher(streamMap);
-                if(mat.find()){
-                    dashMpdUrl = mat.group(1).replace("\\/","/");
+                if (mat.find()) {
+                    dashMpdUrl = mat.group(1).replace("\\/", "/");
                     mat = patDashManifestEncSig.matcher(dashMpdUrl);
-                    if(mat.find()){
-                        encSignatures.append(0,mat.group(1));
-                    }
-                    else{
+                    if (mat.find()) {
+                        encSignatures.append(0, mat.group(1));
+                    } else {
                         dashMpdUrl = null;
                     }
                 }
             }
-            else{
-                if(parseDashManifest){
-                    mat = patDashManifest1.matcher(streamMap);
-                    if(mat.find()){
-                        dashMpdUrl = URLDecoder.decode(mat.group(1),"UTF-8");
-                    }
-                }
-                patTitle = Pattern.compile("title=(.*?)(&|\\Z)");
-                mat = patTitle.matcher(streamMap);
-                if(mat.find()){
-                    videoTitle = URLDecoder.decode(mat.group(1),"UTF-8");
-                }
-                streamMap = URLDecoder.decode(streamMap,"UTF-8");
-            }
-
-            streams = streamMap.split(",|url_encoded_fmt_stream_map|&adaptive_fmts=");
-            SparseArray<YFile> ytFiles = new SparseArray<>();
-            for (String encStream : streams) {
-                encStream = encStream + ",";
-                if(!encStream.contains("itag%3D")) {
-                    continue;
-                }
-                String stream;
-                stream = URLDecoder.decode(encStream,"UTF-8");
-
-                mat = patItag.matcher(stream);
-                int itag;
-                if(mat.find()) {
-                    itag = Integer.parseInt(mat.group(1));
-                    if(LOGGING)
-                        Log.d(LOG_TAG,"Itag found: "+ itag);
-                    if(META_MAP.get(itag) == null){
-                        if(LOGGING)
-                            Log.d(LOG_TAG,"Itag not in list :" + itag);
-                        continue;
-                    }
-                    else if(!includeWebM && META_MAP.get(itag).getExt().equals("webm")){
-                        continue;
-                    }
-                }else {
-                    continue;
-                }
-
-                if(curJsFileName != null){
-                    mat = patEncSig.matcher(stream);
-                    if(mat.find()){
-                        encSignatures.append(itag,mat.group());
-                    }
-                }
-                mat = patUrl.matcher(encStream);
-                String url = null;
-                if(mat.find()){
-                    url = mat.group(1);
-                }
-                if(url != null){
-                    Meta meta = META_MAP.get(itag);
-                    String finalUrl = URLDecoder.decode(url,"UTF-8");
-                    YFile newVideo = new YFile(meta,finalUrl);
-                    ytFiles.put(itag,newVideo);
+        } else {
+            if (parseDashManifest) {
+                mat = patDashManifest1.matcher(streamMap);
+                if (mat.find()) {
+                    dashMpdUrl = URLDecoder.decode(mat.group(1), "UTF-8");
                 }
             }
-
-            if(encSignatures != null){
-                if(LOGGING)
-                    Log.d(LOG_TAG, "getStreamUrls: Decipher Signatures");
-                String signature;
-                decipheredSignature = null;
-                if(decipherSignature(encSignatures)){
-                    lock.lock();
-                    try{
-                        jsExecuting.await(3, TimeUnit.SECONDS);
-                    } finally{
-                        lock.unlock();
-                    }
-                }
-                signature = decipheredSignature;
-                if(signature == null) {
-                    return null;
-                }
-                else{
-                    String[] sigs = signature.split("\n");
-                    for(int i=0;i < encSignatures.size()&& i < sigs.length; i++){
-                        int key = encSignatures.keyAt(i);
-                        if(key == 0){
-                            dashMpdUrl = dashMpdUrl.replace("/s/"+encSignatures.get(key),"/signature/"+sigs[i]);
-                        }
-                        else{
-                            String url = ytFiles.get(key).getUrl();
-                            url+= "&signature=" + sigs[i];
-                            YFile newFile = new YFile(META_MAP.get(key),url);
-                            ytFiles.put(key,newFile);
-                        }
-                    }
-                }
+            patTitle = Pattern.compile("title=(.*?)(&|\\z)");
+            mat = patTitle.matcher(streamMap);
+            if (mat.find()) {
+                videoTitle = URLDecoder.decode(mat.group(1), "UTF-8");
             }
-
-            if (parseDashManifest && dashMpdUrl != null) {
-                for (int i = 0; i < DASH_PARSE_RETRIES; i++) {
-                    try {
-                        // It sometimes failes to connect for no apparent reason. We just retry.
-                        parseDashManifest(dashMpdUrl, ytFiles);
-                        break;
-                    } catch (IOException io) {
-                        Thread.sleep(5);
-                        if (LOGGING)
-                            Log.d(LOG_TAG, "Failed to parse dash manifest " + (i + 1));
-                    }
-                }
-            }
-
-            if (ytFiles.size() == 0) {
-                if (LOGGING)
-                    Log.d(LOG_TAG, streamMap);
-                return null;
-            }
-            return ytFiles;
+            streamMap = URLDecoder.decode(streamMap, "UTF-8");
         }
 
+        streams = streamMap.split(",|url_encoded_fmt_stream_map|&adaptive_fmts=");
+        SparseArray<YFile> ytFiles = new SparseArray<>();
+        for (String encStream : streams) {
+            encStream = encStream + ",";
+            if (!encStream.contains("itag%3D")) {
+                continue;
+            }
+            String stream;
+            stream = URLDecoder.decode(encStream, "UTF-8");
+
+            mat = patItag.matcher(stream);
+            int itag;
+            if (mat.find()) {
+                itag = Integer.parseInt(mat.group(1));
+                if (LOGGING)
+                    Log.d(LOG_TAG, "Itag found:" + itag);
+                if (META_MAP.get(itag) == null) {
+                    if (LOGGING)
+                        Log.d(LOG_TAG, "Itag not in list:" + itag);
+                    continue;
+                } else if (!includeWebM && META_MAP.get(itag).getExt().equals("webm")) {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+
+            if (curJsFileName != null) {
+                mat = patEncSig.matcher(stream);
+                if (mat.find()) {
+                    encSignatures.append(itag, mat.group(1));
+                }
+            }
+            mat = patUrl.matcher(encStream);
+            String url = null;
+            if (mat.find()) {
+                url = mat.group(1);
+            }
+
+            if (url != null) {
+                Meta meta = META_MAP.get(itag);
+                String finalUrl = URLDecoder.decode(url, "UTF-8");
+                YFile newVideo = new YFile(meta, finalUrl);
+                ytFiles.put(itag, newVideo);
+            }
+        }
+
+        if (encSignatures != null) {
+            if (LOGGING)
+                Log.d(LOG_TAG, "Decipher signatures");
+            String signature;
+            decipheredSignature = null;
+            if (decipherSignature(encSignatures)) {
+                lock.lock();
+                try {
+                    jsExecuting.await(3, TimeUnit.SECONDS);
+                } finally {
+                    lock.unlock();
+                }
+            }
+            signature = decipheredSignature;
+            if (signature == null) {
+                return null;
+            } else {
+                String[] sigs = signature.split("\n");
+                for (int i = 0; i < encSignatures.size() && i < sigs.length; i++) {
+                    int key = encSignatures.keyAt(i);
+                    if (key == 0) {
+                        dashMpdUrl = dashMpdUrl.replace("/s/" + encSignatures.get(key), "/signature/" + sigs[i]);
+                    } else {
+                        String url = ytFiles.get(key).getUrl();
+                        url += "&signature=" + sigs[i];
+                        YFile newFile = new YFile(META_MAP.get(key), url);
+                        ytFiles.put(key, newFile);
+                    }
+                }
+            }
+        }
+
+        if (parseDashManifest && dashMpdUrl != null) {
+            for (int i = 0; i < DASH_PARSE_RETRIES; i++) {
+                try {
+                    // It sometimes failes to connect for no apparent reason. We just retry.
+                    parseDashManifest(dashMpdUrl, ytFiles);
+                    break;
+                } catch (IOException io) {
+                    Thread.sleep(5);
+                    if (LOGGING)
+                        Log.d(LOG_TAG, "Failed to parse dash manifest " + (i + 1));
+                }
+            }
+        }
+
+        if (ytFiles.size() == 0) {
+            if (LOGGING)
+                Log.d(LOG_TAG, streamMap);
+            return null;
+        }
+        return ytFiles;
     }
 
 
@@ -472,7 +472,47 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
     }
 
     private void parseDashManifest(String dashMpdUrl, SparseArray<YFile> ytFiles) throws IOException {
-        
+        Pattern patBaseUrl = Pattern.compile("<BaseURL yt:contentLength=\"[0-9]+?\">(.+?)</BaseURL>");
+        String dashManifest;
+        BufferedReader reader = null;
+        Log.d(LOG_TAG, dashMpdUrl);
+        URL getUrl = new URL(dashMpdUrl);
+        HttpURLConnection urlConnection = (HttpURLConnection) getUrl.openConnection();
+        urlConnection.setRequestProperty("User-Agent", USER_AGENT);
+        try {
+            reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            reader.readLine();
+            dashManifest = reader.readLine();
+
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+            urlConnection.disconnect();
+        }
+        if (dashManifest == null)
+            return;
+        Matcher mat = patBaseUrl.matcher(dashManifest);
+        while (mat.find()) {
+            int itag;
+            String url = mat.group(1);
+            Matcher mat2 = patItag.matcher(url);
+            if (mat2.find()) {
+                itag = Integer.parseInt(mat2.group(1));
+                if (META_MAP.get(itag) == null)
+                    continue;
+                if (!includeWebM && META_MAP.get(itag).getExt().equals("webm"))
+                    continue;
+            } else {
+                continue;
+            }
+            url = url.replace("&amp;", "&").replace(",", "%2C").
+                    replace("mime=audio/", "mime=audio%2F").
+                    replace("mime=video/", "mime=video%2F");
+            YFile yf = new YFile(META_MAP.get(itag), url);
+            ytFiles.append(itag, yf);
+        }
+
     }
 
     private void decipherViaWebView(final SparseArray<String> encSignatures) {
@@ -562,6 +602,31 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
         this.includeWebM = includeWebM;
     }
 
+    private void readDecipherFunctFromCache() {
+        if (context != null) {
+            File cacheFile = new File(context.getCacheDir().getAbsolutePath() + "/" + CACHE_FILE_NAME);
+            // The cached functions are valid for 2 weeks
+            if (cacheFile.exists() && (System.currentTimeMillis() - cacheFile.lastModified()) < 1209600000) {
+                BufferedReader reader = null;
+                try {
+                    reader = new BufferedReader(new InputStreamReader(new FileInputStream(cacheFile), "UTF-8"));
+                    decipherJsFileName = reader.readLine();
+                    decipherFunctionName = reader.readLine();
+                    decipherFunctions = reader.readLine();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 
 }

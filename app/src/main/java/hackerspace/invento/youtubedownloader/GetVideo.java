@@ -4,12 +4,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.text.method.LinkMovementMethod;
+import android.view.View;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 
 /**
  * Created by night-crawler on 12/11/15.
  */
-public class GetVideo extends  AsyncTask<Void, Void, Void> {
+public class GetVideo {
 
     String URL;
     Context context;
@@ -19,28 +25,6 @@ public class GetVideo extends  AsyncTask<Void, Void, Void> {
         this.URL = "http://www.saveitoffline.com/#"+u;
         this.context = c;
         Quality = Q;
-
-    }
-
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-
-    }
-
-    @Override
-    protected Void doInBackground(Void... arg0) {
-
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(Void result) {
-        super.onPostExecute(result);
-        // Dismiss the progress dialog
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(URL));
-        context.startActivity(browserIntent);
 
     }
 
