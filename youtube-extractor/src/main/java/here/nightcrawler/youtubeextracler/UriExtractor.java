@@ -2,13 +2,21 @@ package here.nightcrawler.youtubeextracler;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.util.SparseArray;
 
+import com.evgenii.jsevaluator.JsEvaluator;
+import com.evgenii.jsevaluator.interfaces.JsCallback;
+
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.InterruptedIOException;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -416,14 +424,145 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
                         continue;
                     }
                     startIndex = javascriptFile.indexOf(variableDef) + variableDef.length();
+                    for(int braces = 1,i = startIndex; i < javascriptFile.length();i++) {
+                        if(braces == 0) {
+                            decipherFunctions += variableDef + javascriptFile.substring(startIndex, i) + ";";
+                            break;
+                        }
+                        if(javascriptFile.charAt(i)=='{')
+                            braces++;
+                        else if(javascriptFile.charAt(i) == '}')
+                            braces--;
+                    }
+                }
+
+                mat = patFunction.matcher(mainDecipherFunct);
+                while(mat.find()){
+                    String functionDef = "function " + mat.group(2) + "(";
+                    if(decipherFunctions.contains(functionDef)){
+                        continue;
+                    }
+                    startIndex = javascriptFile.indexOf(functionDef) + functionDef.length();
+                    for (int braces = 0, i = startIndex; i < javascriptFile.length(); i++) {
+                        if (braces == 0 && startIndex + 5 < i) {
+                            decipherFunctions += functionDef + javascriptFile.substring(startIndex, i) + ";";
+                            break;
+                        }
+                        if (javascriptFile.charAt(i) == '{')
+                            braces++;
+                        else if (javascriptFile.charAt(i) == '}')
+                            braces--;
+                    }
+                }
+                if (LOGGING)
+                    Log.d(LOG_TAG, "Decipher Function: " + decipherFunctions);
+                decipherViaWebView(encSignature);
+                if (CACHING) {
+                    writeDeciperFunctToChache();
                 }
             }
-
+            else{
+                return false;
+            }
+        }else {
+            decipherViaWebView(encSignature);
         }
+
+        return true;
     }
 
     private void parseDashManifest(String dashMpdUrl, SparseArray<YFile> ytFiles) throws IOException {
-
+        
     }
+
+    private void decipherViaWebView(final SparseArray<String> encSignatures) {
+        if (context == null) {
+            return;
+        }
+        final StringBuilder stb = new StringBuilder(decipherFunctions + " function decipher(");
+        stb.append("){return ");
+        for (int i = 0; i < encSignatures.size(); i++) {
+            int key = encSignatures.keyAt(i);
+            if (i < encSignatures.size() - 1)
+                stb.append(decipherFunctionName).append("('").append(encSignatures.get(key)).append("')+\"\\n\"+");
+            else
+                stb.append(decipherFunctionName).append("('").append(encSignatures.get(key)).append("')");
+        }
+        stb.append("};decipher();");
+        Log.d(LOG_TAG,stb.toString());
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+            @Override
+            public void run() {
+                JsEvaluator js = new JsEvaluator(context);
+                js.evaluate(stb.toString(),
+                        new JsCallback() {
+                            @Override
+                            public void onResult(final String result) {
+                                lock.lock();
+                                try {
+                                    decipheredSignature = result;
+                                    jsExecuting.signal();
+                                } finally {
+                                    lock.unlock();
+                                }
+                            }
+                        });
+            }
+        });
+    }
+
+    private void writeDeciperFunctToChache() {
+        if (context != null) {
+            File cacheFile = new File(context.getCacheDir().getAbsolutePath() + "/" + CACHE_FILE_NAME);
+            BufferedWriter writer = null;
+            try {
+                writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheFile), "UTF-8"));
+                writer.write(decipherJsFileName + "\n");
+                writer.write(decipherFunctionName + "\n");
+                writer.write(decipherFunctions);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (writer != null) {
+                    try {
+                        writer.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Set default protocol of the returned urls to HTTP instead of HTTPS.
+     * HTTP may be blocked in some regions so HTTPS is the default value.
+     * <p/>
+     * Note: Enciphered videos require HTTPS so they are not affected by
+     * this.
+     */
+    public void setDefaultHttpProtocol(boolean useHttp) {
+        this.useHttp = useHttp;
+    }
+
+    /**
+     * Parse the dash manifest for different dash streams and high quality audio. Default: false
+     */
+    public void setParseDashManifest(boolean parseDashManifest) {
+        this.parseDashManifest = parseDashManifest;
+    }
+
+
+    /**
+     * Include the webm format files into the result. Default: true
+     */
+    public void setIncludeWebM(boolean includeWebM) {
+        this.includeWebM = includeWebM;
+    }
+
+
+
 }
 
