@@ -17,6 +17,7 @@ public class GetVideo {
         Quality = Q;
 
     }
+    String youtubeLink = "http://youtube.com/watch?v=xxxx";
 
 
 }
