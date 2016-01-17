@@ -68,7 +68,7 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
             }
 
 
-            Log.v("Response: ", "> " + jsonStr);
+            Log.d("Response: ", "> " + jsonStr);
 
             if (jsonStr != null) {
                 try {

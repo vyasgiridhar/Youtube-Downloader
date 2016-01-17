@@ -23,7 +23,7 @@ public class ListViewAdapter extends BaseSwipeAdapter {
     private Context context;
     ArrayList<Video> result;
     GetSong song = null;
-    VideoHandler video = null;
+    GetVideo video = null;
     LayoutInflater inflater;
 
     public ListViewAdapter(Context c,ArrayList<Video> list){
@@ -66,8 +66,8 @@ public class ListViewAdapter extends BaseSwipeAdapter {
             @Override
             public void onClick(View view) {
 
-                video = new VideoHandler(result.get(position).getURL(),context);
-                video.execute();
+                video = new GetVideo(result.get(position).getURL(), context);
+                video.run();
 
             }
         });
