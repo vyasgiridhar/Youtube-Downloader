@@ -23,7 +23,9 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"/>
-
+        <activity
+            android:name=".DownloadActivity"
+            android:label="@string/app_name"/>
     </application>
 
 </manifest>

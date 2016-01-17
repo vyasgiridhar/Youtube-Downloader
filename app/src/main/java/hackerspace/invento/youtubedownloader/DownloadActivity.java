@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
@@ -17,6 +19,9 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
@@ -43,29 +48,24 @@ public class DownloadActivity extends Activity {
         mainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mainProgressBar = (ProgressBar) findViewById(R.id.prgrBar);
 
-            String ytLink = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+        String ytLink = getIntent().getStringExtra("THE_URL");
 
-            if (ytLink != null
-                    && (ytLink.contains("://youtu.be/") || ytLink.contains("youtube.com/watch?v="))) {
-                youtubeLink = ytLink;
-                // We have a valid link
-                getYoutubeDownloadUrl(youtubeLink);
-            } else {
-                Toast.makeText(this, "", Toast.LENGTH_LONG).show();
-                finish();
-            }
+        Toast.makeText(this.getApplicationContext(),ytLink,Toast.LENGTH_SHORT).show();
+
+        getYoutubeDownloadUrl(youtubeLink);
 
     }
 
-    private void getYoutubeDownloadUrl(String youtubeLink) {
+    private void getYoutubeDownloadUrl(final String youtubeLink) {
         YouTubeUriExtractor ytEx = new YouTubeUriExtractor(this) {
 
             @Override
             public void onUrisAvailable(String videoId, String videoTitle, SparseArray<YtFile> ytFiles) {
                 mainProgressBar.setVisibility(View.GONE);
                 if (ytFiles == null) {
+
                     TextView tv = new TextView(DownloadActivity.this);
-                    tv.setText(R.string.app_update);
+                    tv.setText(youtubeLink);
                     tv.setMovementMethod(LinkMovementMethod.getInstance());
                     mainLayout.addView(tv);
                     return;
@@ -74,6 +74,7 @@ public class DownloadActivity extends Activity {
                 for (int i = 0, itag; i < ytFiles.size(); i++) {
                     itag = ytFiles.keyAt(i);
                     YtFile ytFile = ytFiles.get(itag);
+                    Log.d("Links",ytFiles.get(i).getUrl());
 
                     if (ytFile.getMeta().getHeight() == -1 || ytFile.getMeta().getHeight() >= 360) {
                         addFormatToList(ytFile, ytFiles);
