@@ -1,4 +1,4 @@
-package here.nightcrawler.youtubeextracler;
+package com.night_crawler.youtube_extactor;
 
 import org.junit.Test;
 

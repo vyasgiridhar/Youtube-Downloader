@@ -1,14 +1,11 @@
-package here.nightcrawler.youtubeextracler;
+package com.night_crawler.youtube_extactor;
 
-/**
- * Created by vyas on 14/1/16.
- */
-public class YFile {
+public class YtFile {
 
     private Meta meta;
     private String url = "";
 
-    YFile(Meta meta, String url) {
+    YtFile(Meta meta, String url) {
         this.meta = meta;
         this.url = url;
     }

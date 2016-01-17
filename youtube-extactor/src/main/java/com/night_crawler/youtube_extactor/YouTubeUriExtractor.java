@@ -1,14 +1,4 @@
-package here.nightcrawler.youtubeextracler;
-
-import android.content.Context;
-import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
-import android.util.SparseArray;
-
-import com.evgenii.jsevaluator.JsEvaluator;
-import com.evgenii.jsevaluator.interfaces.JsCallback;
+package com.night_crawler.youtube_extactor;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,15 +19,21 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by vyas on 14/1/16.
- */
-public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<YFile>> {
+import android.content.Context;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+import android.util.SparseArray;
 
+import com.evgenii.jsevaluator.JsEvaluator;
+import com.evgenii.jsevaluator.interfaces.JsCallback;
+
+public abstract class YouTubeUriExtractor extends AsyncTask<String, Void, SparseArray<YtFile>> {
 
     private final static boolean CACHING = true;
     private final static boolean LOGGING = false;
-    private final static String LOG_TAG = "UriExtractor";
+    private final static String LOG_TAG = "YouTubeUriExtractor";
     private final static String CACHE_FILE_NAME = "decipher_js_funct";
     private final static int DASH_PARSE_RETRIES = 5;
 
@@ -48,8 +44,6 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
     private boolean useHttp = false;
     private boolean parseDashManifest = false;
 
-    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36";
-
     private volatile String decipheredSignature;
 
     private static String decipherJsFileName;
@@ -58,6 +52,9 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
 
     private final Lock lock = new ReentrantLock();
     private final Condition jsExecuting = lock.newCondition();
+
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36";
+
     private static final Pattern patYouTubePageLink = Pattern.compile("(http|https)://(www\\.|m.|)youtube\\.com/watch\\?v=(.+?)( |\\z|&)");
     private static final Pattern patYouTubeShortLink = Pattern.compile("(http|https)://(www\\.|)youtu.be/(.+?)( |\\z|&)");
 
@@ -69,8 +66,8 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
     private static final Pattern patEncSig = Pattern.compile("s=([0-9A-F|\\.]{10,}?)(&|,|\")");
     private static final Pattern patUrl = Pattern.compile("url=(.+?)(&|,)");
 
-    private static final Pattern patVaribleFunction = Pattern.compile("(\\{|;| |=)([a-zA-Z$][a-zA-Z0-9]{0,2})\\.([a-zA-Z$][a-zA-Z0-9$]{0,2})\\(");
-    private static final Pattern patFunction = Pattern.compile("(\\{|;||=)([a-zA-Z$_][a-zA-Z0-9$]{0,2})\\(");
+    private static final Pattern patVariableFunction = Pattern.compile("(\\{|;| |=)([a-zA-Z$][a-zA-Z0-9$]{0,2})\\.([a-zA-Z$][a-zA-Z0-9$]{0,2})\\(");
+    private static final Pattern patFunction = Pattern.compile("(\\{|;| |=)([a-zA-Z$_][a-zA-Z0-9$]{0,2})\\(");
     private static final Pattern patDecryptionJsFile = Pattern.compile("jsbin\\\\/(player-(.+?).js)");
     private static final Pattern patSignatureDecFunction = Pattern.compile("\\(\"signature\",(.+?)\\(");
 
@@ -127,31 +124,48 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
         META_MAP.put(251, new Meta(251, "webm", Meta.VCodec.NONE, Meta.ACodec.OPUS, 160, true));
     }
 
-    public UriExtractor(Context con) {
+    public YouTubeUriExtractor(Context con) {
         context = con;
     }
 
-
     @Override
-    protected void onPostExecute(SparseArray<YFile> ytFiles) {
+    protected void onPostExecute(SparseArray<YtFile> ytFiles) {
         onUrisAvailable(youtubeID, videoTitle, ytFiles);
     }
 
-    public abstract void onUrisAvailable(String videoId, String videoTitle, SparseArray<YFile> ytFiles);
+    public abstract void onUrisAvailable(String videoId, String videoTitle, SparseArray<YtFile> ytFiles);
 
     @Override
-    protected SparseArray<YFile> doInBackground(String... params){
-        youtubeID = params[1];
+    protected SparseArray<YtFile> doInBackground(String... params) {
+        youtubeID = null;
         String ytUrl = params[0];
-        try{
-            return getStreamUrls();
-        }catch(Exception E){
-            Log.d(LOG_TAG, "doInBackground: Stream URL Failed");
+        if (ytUrl == null) {
+            return null;
+        }
+        Matcher mat = patYouTubePageLink.matcher(ytUrl);
+        if (mat.find()) {
+            youtubeID = mat.group(3);
+        } else {
+            mat = patYouTubeShortLink.matcher(ytUrl);
+            if (mat.find()) {
+                youtubeID = mat.group(3);
+            } else if (ytUrl.matches("\\p{Graph}+?")) {
+                youtubeID = ytUrl;
+            }
+        }
+        if (youtubeID != null) {
+            try {
+                return getStreamUrls();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.e(LOG_TAG, "Wrong YouTube link format");
         }
         return null;
     }
 
-    private SparseArray<YFile> getStreamUrls() throws IOException, InterruptedException {
+    private SparseArray<YtFile> getStreamUrls() throws IOException, InterruptedException {
 
         String ytInfoUrl = (useHttp) ? "http://" : "https://";
         ytInfoUrl += "www.youtube.com/get_video_info?video_id=" + youtubeID + "&eurl="
@@ -252,7 +266,7 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
         }
 
         streams = streamMap.split(",|url_encoded_fmt_stream_map|&adaptive_fmts=");
-        SparseArray<YFile> ytFiles = new SparseArray<>();
+        SparseArray<YtFile> ytFiles = new SparseArray<>();
         for (String encStream : streams) {
             encStream = encStream + ",";
             if (!encStream.contains("itag%3D")) {
@@ -293,7 +307,7 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
             if (url != null) {
                 Meta meta = META_MAP.get(itag);
                 String finalUrl = URLDecoder.decode(url, "UTF-8");
-                YFile newVideo = new YFile(meta, finalUrl);
+                YtFile newVideo = new YtFile(meta, finalUrl);
                 ytFiles.put(itag, newVideo);
             }
         }
@@ -323,7 +337,7 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
                     } else {
                         String url = ytFiles.get(key).getUrl();
                         url += "&signature=" + sigs[i];
-                        YFile newFile = new YFile(META_MAP.get(key), url);
+                        YtFile newFile = new YtFile(META_MAP.get(key), url);
                         ytFiles.put(key, newFile);
                     }
                 }
@@ -352,17 +366,17 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
         return ytFiles;
     }
 
-
-    private boolean decipherSignature(final SparseArray<String> encSignature) throws IOException {
-        if( decipherFunctionName == null || decipherFunctions == null){
+    private boolean decipherSignature(final SparseArray<String> encSignatures) throws IOException {
+        // Assume the functions don't change that much
+        if (decipherFunctionName == null || decipherFunctions == null) {
             String decipherFunctUrl = "https://s.ytimg.com/yts/jsbin/" + decipherJsFileName;
 
             BufferedReader reader = null;
             String javascriptFile = null;
             URL url = new URL(decipherFunctUrl);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestProperty("User-Agent",USER_AGENT);
-            try{
+            urlConnection.setRequestProperty("User-Agent", USER_AGENT);
+            try {
                 reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                 StringBuilder sb = new StringBuilder("");
                 String line;
@@ -370,39 +384,40 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
                     sb.append(line);
                 }
                 javascriptFile = sb.toString();
-            }finally {
-                if(reader != null){
+            } finally {
+                if (reader != null) {
                     reader.close();
                 }
                 urlConnection.disconnect();
             }
-            Log.d("JS",javascriptFile);
-            if(LOGGING)
-                Log.d(LOG_TAG,"Decipher FunctURL: "+ decipherFunctUrl);
+
+            if (LOGGING)
+                Log.d(LOG_TAG, "Decipher FunctURL: " + decipherFunctUrl);
             Matcher mat = patSignatureDecFunction.matcher(javascriptFile);
-            if(mat.find()){
+            if (mat.find()) {
                 decipherFunctionName = mat.group(1);
-                if(LOGGING)
-                    Log.d(LOG_TAG,"Decipher Functname: "+decipherFunctUrl);
+                if (LOGGING)
+                    Log.d(LOG_TAG, "Decipher Functname: " + decipherFunctionName);
+
                 Pattern patMainVariable = Pattern.compile("(var |,)" + decipherFunctionName + "(=function\\((.{1,3})\\)\\{)");
 
                 String mainDecipherFunct;
 
                 mat = patMainVariable.matcher(javascriptFile);
-                if(mat.find()){
-                    mainDecipherFunct = "var "+decipherFunctionName + mat.group(2);
-                }else {
-                    Pattern patMainFunction = Pattern.compile("(function  |,)" + decipherFunctionName + "(\\((.{1,3})\\)\\{)");
+                if (mat.find()) {
+                    mainDecipherFunct = "var " + decipherFunctionName + mat.group(2);
+                } else {
+                    Pattern patMainFunction = Pattern.compile("(function |,)" + decipherFunctionName + "(\\((.{1,3})\\)\\{)");
                     mat = patMainFunction.matcher(javascriptFile);
-                    if(!mat.find())
+                    if (!mat.find())
                         return false;
-                    mainDecipherFunct = "function " + decipherFunctionName +mat.group(2);
+                    mainDecipherFunct = "function " + decipherFunctionName + mat.group(2);
                 }
 
                 int startIndex = mat.end();
 
-                for(int braces =1,i = startIndex; i< javascriptFile.length();i++){
-                    if (braces == 0 && startIndex +5 < i){
+                for (int braces = 1, i = startIndex; i < javascriptFile.length(); i++) {
+                    if (braces == 0 && startIndex + 5 < i) {
                         mainDecipherFunct += javascriptFile.substring(startIndex, i) + ";";
                         break;
                     }
@@ -412,34 +427,32 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
                         braces--;
                 }
                 decipherFunctions = mainDecipherFunct;
-
                 // Search the main function for extra functions and variables
                 // needed for deciphering
                 // Search for variables
-
-                mat = patVaribleFunction.matcher(mainDecipherFunct);
-                while(mat.find()) {
+                mat = patVariableFunction.matcher(mainDecipherFunct);
+                while (mat.find()) {
                     String variableDef = "var " + mat.group(2) + "={";
-                    if(decipherFunctions.contains(variableDef)){
+                    if (decipherFunctions.contains(variableDef)) {
                         continue;
                     }
                     startIndex = javascriptFile.indexOf(variableDef) + variableDef.length();
-                    for(int braces = 1,i = startIndex; i < javascriptFile.length();i++) {
-                        if(braces == 0) {
+                    for (int braces = 1, i = startIndex; i < javascriptFile.length(); i++) {
+                        if (braces == 0) {
                             decipherFunctions += variableDef + javascriptFile.substring(startIndex, i) + ";";
                             break;
                         }
-                        if(javascriptFile.charAt(i)=='{')
+                        if (javascriptFile.charAt(i) == '{')
                             braces++;
-                        else if(javascriptFile.charAt(i) == '}')
+                        else if (javascriptFile.charAt(i) == '}')
                             braces--;
                     }
                 }
-
+                // Search for functions
                 mat = patFunction.matcher(mainDecipherFunct);
-                while(mat.find()){
+                while (mat.find()) {
                     String functionDef = "function " + mat.group(2) + "(";
-                    if(decipherFunctions.contains(functionDef)){
+                    if (decipherFunctions.contains(functionDef)) {
                         continue;
                     }
                     startIndex = javascriptFile.indexOf(functionDef) + functionDef.length();
@@ -456,26 +469,24 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
                 }
                 if (LOGGING)
                     Log.d(LOG_TAG, "Decipher Function: " + decipherFunctions);
-                decipherViaWebView(encSignature);
+                decipherViaWebView(encSignatures);
                 if (CACHING) {
                     writeDeciperFunctToChache();
                 }
-            }
-            else{
+            } else {
                 return false;
             }
-        }else {
-            decipherViaWebView(encSignature);
+        } else {
+            decipherViaWebView(encSignatures);
         }
-
         return true;
     }
 
-    private void parseDashManifest(String dashMpdUrl, SparseArray<YFile> ytFiles) throws IOException {
+    private void parseDashManifest(String dashMpdUrl, SparseArray<YtFile> ytFiles) throws IOException {
         Pattern patBaseUrl = Pattern.compile("<BaseURL yt:contentLength=\"[0-9]+?\">(.+?)</BaseURL>");
         String dashManifest;
         BufferedReader reader = null;
-        Log.d(LOG_TAG, dashMpdUrl);
+
         URL getUrl = new URL(dashMpdUrl);
         HttpURLConnection urlConnection = (HttpURLConnection) getUrl.openConnection();
         urlConnection.setRequestProperty("User-Agent", USER_AGENT);
@@ -509,97 +520,10 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
             url = url.replace("&amp;", "&").replace(",", "%2C").
                     replace("mime=audio/", "mime=audio%2F").
                     replace("mime=video/", "mime=video%2F");
-            YFile yf = new YFile(META_MAP.get(itag), url);
+            YtFile yf = new YtFile(META_MAP.get(itag), url);
             ytFiles.append(itag, yf);
         }
 
-    }
-
-    private void decipherViaWebView(final SparseArray<String> encSignatures) {
-        if (context == null) {
-            return;
-        }
-        final StringBuilder stb = new StringBuilder(decipherFunctions + " function decipher(");
-        stb.append("){return ");
-        for (int i = 0; i < encSignatures.size(); i++) {
-            int key = encSignatures.keyAt(i);
-            if (i < encSignatures.size() - 1)
-                stb.append(decipherFunctionName).append("('").append(encSignatures.get(key)).append("')+\"\\n\"+");
-            else
-                stb.append(decipherFunctionName).append("('").append(encSignatures.get(key)).append("')");
-        }
-        stb.append("};decipher();");
-        Log.d(LOG_TAG,stb.toString());
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-
-            @Override
-            public void run() {
-                JsEvaluator js = new JsEvaluator(context);
-                js.evaluate(stb.toString(),
-                        new JsCallback() {
-                            @Override
-                            public void onResult(final String result) {
-                                lock.lock();
-                                try {
-                                    decipheredSignature = result;
-                                    jsExecuting.signal();
-                                } finally {
-                                    lock.unlock();
-                                }
-                            }
-                        });
-            }
-        });
-    }
-
-    private void writeDeciperFunctToChache() {
-        if (context != null) {
-            File cacheFile = new File(context.getCacheDir().getAbsolutePath() + "/" + CACHE_FILE_NAME);
-            BufferedWriter writer = null;
-            try {
-                writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheFile), "UTF-8"));
-                writer.write(decipherJsFileName + "\n");
-                writer.write(decipherFunctionName + "\n");
-                writer.write(decipherFunctions);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                if (writer != null) {
-                    try {
-                        writer.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Set default protocol of the returned urls to HTTP instead of HTTPS.
-     * HTTP may be blocked in some regions so HTTPS is the default value.
-     * <p/>
-     * Note: Enciphered videos require HTTPS so they are not affected by
-     * this.
-     */
-    public void setDefaultHttpProtocol(boolean useHttp) {
-        this.useHttp = useHttp;
-    }
-
-    /**
-     * Parse the dash manifest for different dash streams and high quality audio. Default: false
-     */
-    public void setParseDashManifest(boolean parseDashManifest) {
-        this.parseDashManifest = parseDashManifest;
-    }
-
-
-    /**
-     * Include the webm format files into the result. Default: true
-     */
-    public void setIncludeWebM(boolean includeWebM) {
-        this.includeWebM = includeWebM;
     }
 
     private void readDecipherFunctFromCache() {
@@ -628,6 +552,91 @@ public abstract class UriExtractor extends AsyncTask<String, Void ,SparseArray<Y
         }
     }
 
+    /**
+     * Parse the dash manifest for different dash streams and high quality audio. Default: false
+     */
+    public void setParseDashManifest(boolean parseDashManifest) {
+        this.parseDashManifest = parseDashManifest;
+    }
+
+
+    /**
+     * Include the webm format files into the result. Default: true
+     */
+    public void setIncludeWebM(boolean includeWebM) {
+        this.includeWebM = includeWebM;
+    }
+
+
+    /**
+     * Set default protocol of the returned urls to HTTP instead of HTTPS.
+     * HTTP may be blocked in some regions so HTTPS is the default value.
+     * <p/>
+     * Note: Enciphered videos require HTTPS so they are not affected by
+     * this.
+     */
+    public void setDefaultHttpProtocol(boolean useHttp) {
+        this.useHttp = useHttp;
+    }
+
+    private void writeDeciperFunctToChache() {
+        if (context != null) {
+            File cacheFile = new File(context.getCacheDir().getAbsolutePath() + "/" + CACHE_FILE_NAME);
+            BufferedWriter writer = null;
+            try {
+                writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheFile), "UTF-8"));
+                writer.write(decipherJsFileName + "\n");
+                writer.write(decipherFunctionName + "\n");
+                writer.write(decipherFunctions);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (writer != null) {
+                    try {
+                        writer.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+    private void decipherViaWebView(final SparseArray<String> encSignatures) {
+        if (context == null) {
+            return;
+        }
+        final StringBuilder stb = new StringBuilder(decipherFunctions + " function decipher(");
+        stb.append("){return ");
+        for (int i = 0; i < encSignatures.size(); i++) {
+            int key = encSignatures.keyAt(i);
+            if (i < encSignatures.size() - 1)
+                stb.append(decipherFunctionName).append("('").append(encSignatures.get(key)).append("')+\"\\n\"+");
+            else
+                stb.append(decipherFunctionName).append("('").append(encSignatures.get(key)).append("')");
+        }
+        stb.append("};decipher();");
+
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+            @Override
+            public void run() {
+                JsEvaluator js = new JsEvaluator(context);
+                js.evaluate(stb.toString(),
+                        new JsCallback() {
+                            @Override
+                            public void onResult(final String result) {
+                                lock.lock();
+                                try {
+                                    decipheredSignature = result;
+                                    jsExecuting.signal();
+                                } finally {
+                                    lock.unlock();
+                                }
+                            }
+                        });
+            }
+        });
+    }
 
 }
-

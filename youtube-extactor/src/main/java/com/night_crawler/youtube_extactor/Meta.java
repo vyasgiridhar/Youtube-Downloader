@@ -1,8 +1,4 @@
-package here.nightcrawler.youtubeextracler;
-
-/**
- * Created by vyas on 14/1/16.
- */
+package com.night_crawler.youtube_extactor;
 
 public class Meta {
 

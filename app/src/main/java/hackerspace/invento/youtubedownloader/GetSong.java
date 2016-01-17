@@ -6,17 +6,13 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
-
-import org.apache.http.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
@@ -29,6 +25,9 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
     DownloadManager dm;
     private long enqueue;
     ProgressDialog PD;
+
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36";
+
 
     void SetURL(String u, Context c) {
 
@@ -50,9 +49,24 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... arg0) {
 
+        String jsonStr = null;
+        BufferedReader reader = null;
         try {
 
-           String jsonStr = null;
+            URL getUrl = new URL(this.url);
+            HttpURLConnection urlConnection = (HttpURLConnection) getUrl.openConnection();
+            urlConnection.setRequestProperty("User-Agent", USER_AGENT);
+            try {
+                 reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                jsonStr  = reader.readLine();
+
+            } finally {
+                if (reader != null) {
+                    reader.close();
+                }
+                urlConnection.disconnect();
+            }
+
 
             Log.v("Response: ", "> " + jsonStr);
 
