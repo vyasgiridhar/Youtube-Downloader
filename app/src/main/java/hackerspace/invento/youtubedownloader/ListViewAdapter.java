@@ -67,9 +67,8 @@ public class ListViewAdapter extends BaseSwipeAdapter {
             @Override
             public void onClick(View view) {
 
-                Intent intent = new Intent(context,DownloadActivity.class);
-                intent.putExtra("THE_URL", result.get(position).getURL());
-                context.startActivity(intent);
+                video = new GetVideo(result.get(position).getURL(),context);
+                video.run();
 
             }
         });

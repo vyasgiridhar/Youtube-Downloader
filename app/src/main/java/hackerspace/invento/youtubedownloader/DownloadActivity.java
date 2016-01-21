@@ -32,7 +32,11 @@ import at.huber.youtubeExtractor.YtFile;
  */
 public class DownloadActivity extends Activity {
 
-    private static final int ITAG_FOR_AUDIO = 140;
+
+    private static String youtubeLink;
+
+
+/*    private static final int ITAG_FOR_AUDIO = 140;
 
     private static String youtubeLink;
 
@@ -63,18 +67,18 @@ public class DownloadActivity extends Activity {
             public void onUrisAvailable(String videoId, String videoTitle, SparseArray<YtFile> ytFiles) {
                 mainProgressBar.setVisibility(View.GONE);
                 if (ytFiles == null) {
-
                     TextView tv = new TextView(DownloadActivity.this);
                     tv.setText(youtubeLink);
                     tv.setMovementMethod(LinkMovementMethod.getInstance());
                     mainLayout.addView(tv);
                     return;
                 }
+                Toast.makeText(getApplicationContext(),"Loaded",Toast.LENGTH_SHORT).show();
                 formatsToShowList = new ArrayList<>();
                 for (int i = 0, itag; i < ytFiles.size(); i++) {
                     itag = ytFiles.keyAt(i);
                     YtFile ytFile = ytFiles.get(itag);
-                    Log.d("Links",ytFiles.get(i).getUrl());
+                    Log.d("Links",itag + ytFiles.get(i).getUrl());
 
                     if (ytFile.getMeta().getHeight() == -1 || ytFile.getMeta().getHeight() >= 360) {
                         addFormatToList(ytFile, ytFiles);
@@ -93,6 +97,7 @@ public class DownloadActivity extends Activity {
         };
         ytEx.setIncludeWebM(false);
         ytEx.setParseDashManifest(true);
+        Toast.makeText(getApplicationContext(),"Executing",Toast.LENGTH_SHORT).show();
         ytEx.execute(youtubeLink);
 
     }
@@ -195,5 +200,5 @@ public class DownloadActivity extends Activity {
         YtFile audioFile;
         YtFile videoFile;
     }
-
+*/
 }

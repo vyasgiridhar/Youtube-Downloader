@@ -32,11 +32,11 @@
             android:orientation="vertical"
             android:gravity="center">
 
-            <ProgressBar
-                android:id="@+id/prgrBar"
+            <ListView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center" />
+                android:id="@+id/quality_layout"
+                />
 
         </LinearLayout>
 
