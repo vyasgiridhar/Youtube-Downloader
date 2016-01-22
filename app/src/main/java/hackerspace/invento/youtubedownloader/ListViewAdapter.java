@@ -15,6 +15,9 @@ import com.daimajia.swipe.adapters.BaseSwipeAdapter;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import at.huber.youtubeExtractor.YtFile;
 
 /**
  * Created by invento on 28/5/15.
@@ -68,7 +71,9 @@ public class ListViewAdapter extends BaseSwipeAdapter {
             public void onClick(View view) {
 
                 video = new GetVideo(result.get(position).getURL(),context);
-                video.run();
+                List<YtFile> links = video.run();
+                Intent I = new Intent(context,DownloadActivity.class);
+                I.putParcelableArrayListExtra("Links",links);
 
             }
         });

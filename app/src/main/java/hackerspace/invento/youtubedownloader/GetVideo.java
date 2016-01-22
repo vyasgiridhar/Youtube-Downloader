@@ -1,8 +1,13 @@
 package hackerspace.invento.youtubedownloader;
 
 import android.content.Context;;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.util.SparseArray;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
@@ -14,8 +19,7 @@ public class GetVideo {
 
     String URL;
     Context context;
-    String Quality;
-    Video Vid;
+    List<YtFile> themfiles = new ArrayList<>();
     GetVideo(String u,Context c) {
 
         this.URL = u;
@@ -31,18 +35,20 @@ public class GetVideo {
                 for(int i = 0; i < ytFiles.size(); i++) {
                     int key = ytFiles.keyAt(i);
                     // get the object by the key.
-                    YtFile obj = ytFiles.get(key);
-                    Log.d("Final URL",obj.getUrl());
+                    themfiles.add(ytFiles.get(key));
                 }
             }
         }
     };
 
-    public void run(){
+    public List<YtFile> run(){
         this.YtEX.setIncludeWebM(false);
         YtEX.setParseDashManifest(true);
         this.YtEX.execute(URL);
-
+        while(YtEX.getStatus()== AsyncTask.Status.FINISHED){
+            return this.themfiles;
+        }
+    return null;
     }
 
 }
