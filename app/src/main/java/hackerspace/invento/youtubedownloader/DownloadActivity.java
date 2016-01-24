@@ -35,10 +35,8 @@ public class DownloadActivity extends Activity {
 
     private static String youtubeLink;
 
+    private static final int ITAG_FOR_AUDIO = 140;
 
-/*    private static final int ITAG_FOR_AUDIO = 140;
-
-    private static String youtubeLink;
 
     private LinearLayout mainLayout;
     private ProgressBar mainProgressBar;
@@ -49,7 +47,7 @@ public class DownloadActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_download);
-        mainLayout = (LinearLayout) findViewById(R.id.main_layout);
+        mainLayout = (LinearLayout) findViewById(R.id.);
         mainProgressBar = (ProgressBar) findViewById(R.id.prgrBar);
 
         String ytLink = getIntent().getStringExtra("THE_URL");

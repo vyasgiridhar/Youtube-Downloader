@@ -5,9 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.util.SparseArray;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
 
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
@@ -19,7 +17,7 @@ public class GetVideo {
 
     String URL;
     Context context;
-    List<YtFile> themfiles = new ArrayList<>();
+    ArrayList<YtFile> themfiles = new ArrayList<>();
     GetVideo(String u,Context c) {
 
         this.URL = u;
@@ -41,14 +39,13 @@ public class GetVideo {
         }
     };
 
-    public List<YtFile> run(){
+    public ArrayList<YtFile> run(){
         this.YtEX.setIncludeWebM(false);
         YtEX.setParseDashManifest(true);
         this.YtEX.execute(URL);
-        while(YtEX.getStatus()== AsyncTask.Status.FINISHED){
-            return this.themfiles;
+        while(YtEX.getStatus()!= AsyncTask.Status.FINISHED){
         }
-    return null;
+    return this.themfiles;
     }
 
 }
