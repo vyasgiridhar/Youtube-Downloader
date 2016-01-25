@@ -47,8 +47,6 @@ public class DownloadActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_download);
-        mainLayout = (LinearLayout) findViewById(R.id.);
-        mainProgressBar = (ProgressBar) findViewById(R.id.prgrBar);
 
         String ytLink = getIntent().getStringExtra("THE_URL");
 
@@ -68,7 +66,6 @@ public class DownloadActivity extends Activity {
                     TextView tv = new TextView(DownloadActivity.this);
                     tv.setText(youtubeLink);
                     tv.setMovementMethod(LinkMovementMethod.getInstance());
-                    mainLayout.addView(tv);
                     return;
                 }
                 Toast.makeText(getApplicationContext(),"Loaded",Toast.LENGTH_SHORT).show();
@@ -198,5 +195,5 @@ public class DownloadActivity extends Activity {
         YtFile audioFile;
         YtFile videoFile;
     }
-*/
+
 }
