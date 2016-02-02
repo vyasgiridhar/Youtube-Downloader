@@ -70,24 +70,23 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
             }
 
 
-            Log.d("Response: ", "> " + jsonStr);
+            Log.d("Response: ",jsonStr);
 
-            if (jsonStr != null) {
+
 
                 Document string = Jsoup.parse(jsonStr);
                 this.url = string.getElementById("Link").toString();
                 Log.d("THe URL = ",this.url);
 
-            } else {
-                Log.e("ServiceHandler", "Couldn't get any data from the url");
-            }
 
             return null;
         }catch(Exception E){
           /*  Toast.makeText(context,"Couldn't fetch Result",
                     Toast.LENGTH_SHORT).show();*/
         }
-    return null;
+        Log.d("THe URL = ",this.url);
+
+        return null;
     }
 
     @Override
