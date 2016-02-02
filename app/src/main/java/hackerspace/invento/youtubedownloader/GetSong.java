@@ -9,6 +9,8 @@ import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -71,16 +73,11 @@ public class GetSong extends AsyncTask<Void, Void, Void> {
             Log.d("Response: ", "> " + jsonStr);
 
             if (jsonStr != null) {
-                try {
 
-                    JSONObject jsonObj = new JSONObject(jsonStr);
+                Document string = Jsoup.parse(jsonStr);
+                this.url = string.getElementById("Link").toString();
+                Log.d("THe URL = ",this.url);
 
-                    this.url = jsonObj.getString("link");
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
             } else {
                 Log.e("ServiceHandler", "Couldn't get any data from the url");
             }

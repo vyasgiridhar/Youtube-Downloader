@@ -36,4 +36,6 @@ dependencies {
     compile 'com.google.android.gms:play-services-ads:8.4.0'
     compile 'com.googlecode.mp4parser:isoparser:1.1.17'
     compile 'org.aspectj:aspectjrt:1.8.8'
+    compile "org.jsoup:jsoup:1.8.1"
+
 }

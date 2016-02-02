@@ -2,6 +2,7 @@ package hackerspace.invento.youtubedownloader;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,7 +74,8 @@ public class ListViewAdapter extends BaseSwipeAdapter {
                 //video = new GetVideo(result.get(position).getURL(),context);
                 String url = result.get(position).getURL();
                 Intent I = new Intent(context,DownloadActivity.class);
-                I.putExtra("THE_URL",url);
+                Log.d("Starting", "onClick: Activity");
+                I.putExtra(Intent.EXTRA_TEXT,url);
                 context.startActivity(I);
             }
         });

@@ -47,25 +47,10 @@ public class DownloadActivity extends Activity {
         mainProgressBar = (ProgressBar) findViewById(R.id.prgrBar);
 
         // Check how it was started and if we can get the youtube link
-        if (savedInstanceState == null && Intent.ACTION_SEND.equals(getIntent().getAction())
-                && getIntent().getType() != null && "text/plain".equals(getIntent().getType())) {
 
-            String ytLink = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+        String ytLink = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+        getYoutubeDownloadUrl(youtubeLink);
 
-            if (ytLink != null
-                    && (ytLink.contains("://youtu.be/") || ytLink.contains("youtube.com/watch?v="))) {
-                youtubeLink = ytLink;
-                // We have a valid link
-                getYoutubeDownloadUrl(youtubeLink);
-            } else {
-                Toast.makeText(this, "Not a yt link", Toast.LENGTH_LONG).show();
-                finish();
-            }
-        } else if (savedInstanceState != null && youtubeLink != null) {
-            getYoutubeDownloadUrl(youtubeLink);
-        } else {
-            finish();
-        }
     }
 
     private void getYoutubeDownloadUrl(String youtubeLink) {
