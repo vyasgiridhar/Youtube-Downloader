@@ -11,6 +11,7 @@ import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -27,16 +28,11 @@ import java.util.List;
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
 
-/**
- * Created by vyas on 17/1/16.
- */
 public class DownloadActivity extends Activity {
-
-
-    private static String youtubeLink;
 
     private static final int ITAG_FOR_AUDIO = 140;
 
+    private static String youtubeLink;
 
     private LinearLayout mainLayout;
     private ProgressBar mainProgressBar;
@@ -47,16 +43,32 @@ public class DownloadActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_download);
+        mainLayout = (LinearLayout) findViewById(R.id.main_layout);
+        mainProgressBar = (ProgressBar) findViewById(R.id.prgrBar);
 
-        String ytLink = getIntent().getStringExtra("THE_URL");
+        // Check how it was started and if we can get the youtube link
+        if (savedInstanceState == null && Intent.ACTION_SEND.equals(getIntent().getAction())
+                && getIntent().getType() != null && "text/plain".equals(getIntent().getType())) {
 
-        Toast.makeText(this.getApplicationContext(),ytLink,Toast.LENGTH_SHORT).show();
+            String ytLink = getIntent().getStringExtra(Intent.EXTRA_TEXT);
 
-        getYoutubeDownloadUrl(youtubeLink);
-
+            if (ytLink != null
+                    && (ytLink.contains("://youtu.be/") || ytLink.contains("youtube.com/watch?v="))) {
+                youtubeLink = ytLink;
+                // We have a valid link
+                getYoutubeDownloadUrl(youtubeLink);
+            } else {
+                Toast.makeText(this, "Not a yt link", Toast.LENGTH_LONG).show();
+                finish();
+            }
+        } else if (savedInstanceState != null && youtubeLink != null) {
+            getYoutubeDownloadUrl(youtubeLink);
+        } else {
+            finish();
+        }
     }
 
-    private void getYoutubeDownloadUrl(final String youtubeLink) {
+    private void getYoutubeDownloadUrl(String youtubeLink) {
         YouTubeUriExtractor ytEx = new YouTubeUriExtractor(this) {
 
             @Override
@@ -64,17 +76,16 @@ public class DownloadActivity extends Activity {
                 mainProgressBar.setVisibility(View.GONE);
                 if (ytFiles == null) {
                     TextView tv = new TextView(DownloadActivity.this);
-                    tv.setText(youtubeLink);
+                    tv.setText("Update app");
                     tv.setMovementMethod(LinkMovementMethod.getInstance());
+                    mainLayout.addView(tv);
                     return;
                 }
-                Toast.makeText(getApplicationContext(),"Loaded",Toast.LENGTH_SHORT).show();
                 formatsToShowList = new ArrayList<>();
                 for (int i = 0, itag; i < ytFiles.size(); i++) {
                     itag = ytFiles.keyAt(i);
                     YtFile ytFile = ytFiles.get(itag);
-                    Log.d("Links",itag + ytFiles.get(i).getUrl());
-
+                    Log.d("asdasd", "onUrisAvailable: "+ ytFile.getUrl());
                     if (ytFile.getMeta().getHeight() == -1 || ytFile.getMeta().getHeight() >= 360) {
                         addFormatToList(ytFile, ytFiles);
                     }
@@ -92,7 +103,6 @@ public class DownloadActivity extends Activity {
         };
         ytEx.setIncludeWebM(false);
         ytEx.setParseDashManifest(true);
-        Toast.makeText(getApplicationContext(),"Executing",Toast.LENGTH_SHORT).show();
         ytEx.execute(youtubeLink);
 
     }
@@ -133,7 +143,7 @@ public class DownloadActivity extends Activity {
                     ytFrVideo.height + "p";
         Button btn = new Button(this);
         btn.setText(btnText);
-        btn.setOnClickListener(new View.OnClickListener() {
+        btn.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
