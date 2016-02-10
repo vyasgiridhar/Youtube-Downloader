@@ -54,6 +54,12 @@ public class ListViewAdapter extends BaseSwipeAdapter {
             @Override
             public void onOpen(SwipeLayout layout) {
                 Toast.makeText(context, "Audio or video?", Toast.LENGTH_LONG).show();
+                String url = result.get(position).getURL();
+                Intent I = new Intent(context,DownloadActivity.class);
+                Log.d("Starting", "onClick: Activity");
+                I.putExtra(Intent.EXTRA_TEXT,url);
+                context.startActivity(I);
+
             }
         });
 

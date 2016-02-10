@@ -2,6 +2,7 @@ package hackerspace.invento.youtubedownloader;
 
 import android.app.Activity;
 import android.app.DownloadManager;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -37,6 +38,7 @@ public class DownloadActivity extends Activity {
     private LinearLayout mainLayout;
     private ProgressBar mainProgressBar;
     private List<YtFragmentedVideo> formatsToShowList;
+    private ProgressDialog PD;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +47,13 @@ public class DownloadActivity extends Activity {
         setContentView(R.layout.activity_download);
         mainLayout = (LinearLayout) findViewById(R.id.main_layout);
         mainProgressBar = (ProgressBar) findViewById(R.id.prgrBar);
-
+        PD = new ProgressDialog(this);
+        PD.setMessage("Parsing Data");
+        PD.show();
         // Check how it was started and if we can get the youtube link
 
         String ytLink = getIntent().getStringExtra(Intent.EXTRA_TEXT);
-        getYoutubeDownloadUrl(youtubeLink);
+        getYoutubeDownloadUrl(ytLink);
 
     }
 
@@ -59,6 +63,7 @@ public class DownloadActivity extends Activity {
             @Override
             public void onUrisAvailable(String videoId, String videoTitle, SparseArray<YtFile> ytFiles) {
                 mainProgressBar.setVisibility(View.GONE);
+                PD.dismiss();
                 if (ytFiles == null) {
                     TextView tv = new TextView(DownloadActivity.this);
                     tv.setText("Update app");
