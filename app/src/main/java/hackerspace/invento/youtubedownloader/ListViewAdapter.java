@@ -44,6 +44,7 @@ public class ListViewAdapter extends BaseSwipeAdapter {
         return R.id.swipe;
     }
 
+
     @Override
     public View generateView(final int position, ViewGroup parent){
         View v = LayoutInflater.from(context).inflate(R.layout.listview_item,null);
@@ -53,38 +54,15 @@ public class ListViewAdapter extends BaseSwipeAdapter {
         swipe.addSwipeListener(new SimpleSwipeListener() {
             @Override
             public void onOpen(SwipeLayout layout) {
-                Toast.makeText(context, "Audio or video?", Toast.LENGTH_LONG).show();
                 String url = result.get(position).getURL();
-                Intent I = new Intent(context,DownloadActivity.class);
+                Intent I = new Intent(context, DownloadActivity.class);
                 Log.d("Starting", "onClick: Activity");
-                I.putExtra(Intent.EXTRA_TEXT,url);
+                I.putExtra(Intent.EXTRA_TEXT, url);
                 context.startActivity(I);
 
             }
         });
 
-        v.findViewById(R.id.Audio).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                song = new GetSong();
-                song.SetURL(result.get(position).getURL(), context);
-                song.execute();
-
-            }
-        });
-        v.findViewById(R.id.Video).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                //video = new GetVideo(result.get(position).getURL(),context);
-                String url = result.get(position).getURL();
-                Intent I = new Intent(context,DownloadActivity.class);
-                Log.d("Starting", "onClick: Activity");
-                I.putExtra(Intent.EXTRA_TEXT,url);
-                context.startActivity(I);
-            }
-        });
         return v;
     }
 
