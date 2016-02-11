@@ -56,7 +56,7 @@ public class YoutubeHandler {
 
             for(SearchResult result:results){
                 Video vid = new Video();
-                Log.d("Title",result.getSnippet().getTitle());
+               // Log.d("Title",result.getSnippet().getTitle());
                 vid.setTitle(result.getSnippet().getTitle());
 
                 vid.setimgurl(result.getSnippet().getThumbnails().getDefault().getUrl());
