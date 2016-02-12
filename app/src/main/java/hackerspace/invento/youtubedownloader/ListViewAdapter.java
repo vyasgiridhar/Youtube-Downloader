@@ -27,8 +27,6 @@ public class ListViewAdapter extends BaseSwipeAdapter {
 
     private Context context;
     ArrayList<Video> result;
-    GetSong song = null;
-    GetVideo video = null;
     LayoutInflater inflater;
 
     public ListViewAdapter(Context c,ArrayList<Video> list){

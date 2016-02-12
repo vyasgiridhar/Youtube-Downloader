@@ -156,6 +156,7 @@ public class MainActivity extends Activity {
             if(this.Obtained){
                 adap = new ListViewAdapter(MainActivity.this, List);
                 list.setAdapter(adap);
+                adap.notifyDataSetChanged();
                 list.setVisibility(View.VISIBLE);
                 adap.setMode(Attributes.Mode.Single);
             }

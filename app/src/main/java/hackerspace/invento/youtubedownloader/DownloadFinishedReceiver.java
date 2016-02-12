@@ -81,6 +81,7 @@ public class DownloadFinishedReceiver extends BroadcastReceiver {
                         } else {
                             if (inPath.endsWith(".mp4")) {
                                 mergeMp4(dlStatus.otherFilePath, inPath);
+
                             } else if (inPath.endsWith(".m4a")) {
                                 mergeMp4(inPath, dlStatus.otherFilePath);
                             }
