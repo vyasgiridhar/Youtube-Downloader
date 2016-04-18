@@ -83,7 +83,7 @@ public class DownloadFinishedReceiver extends BroadcastReceiver {
                             if (inPath.endsWith(".mp4")) {
                                 mergeMp4(dlStatus.otherFilePath, inPath);
                                 String x ="" ;
-                                Log.d("TAG", "onReceive: "+);
+                                Log.d("TAG", "onReceive: ");
                             } else if (inPath.endsWith(".m4a")) {
                                 mergeMp4(inPath, dlStatus.otherFilePath);
                             }
