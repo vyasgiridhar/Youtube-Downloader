@@ -52,7 +52,7 @@ public class DownloadActivity extends Activity {
         PD.show();
         // Check how it was started and if we can get the youtube link
 
-        String ytLink = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+        String ytLink = getIntent().getStringExtra("URL");
         getYoutubeDownloadUrl(ytLink);
 
     }
